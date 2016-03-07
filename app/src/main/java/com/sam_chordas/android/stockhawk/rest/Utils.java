@@ -33,6 +33,16 @@ public class Utils {
     return;
   }
 
+//  @Retention(RetentionPolicy.SOURCE)
+//  @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID,  LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
+//  public @interface LocationStatus {}
+//
+//  public static final int LOCATION_STATUS_OK = 0;
+//  public static final int LOCATION_STATUS_SERVER_DOWN = 1;
+//  public static final int LOCATION_STATUS_SERVER_INVALID = 2;
+//  public static final int LOCATION_STATUS_UNKNOWN = 3;
+//  public static final int LOCATION_STATUS_INVALID = 4;
+
   public static ArrayList quoteJsonToContentVals(String JSON){
     ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
     JSONObject jsonObject = null;

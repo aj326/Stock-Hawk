@@ -21,6 +21,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -55,6 +56,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   private QuoteCursorAdapter mCursorAdapter;
   private Context mContext;
   private Cursor mCursor;
+  private String message;
   boolean isConnected;
 
 
@@ -69,6 +71,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     isConnected = activeNetwork != null &&
         activeNetwork.isConnectedOrConnecting();
     setContentView(R.layout.activity_my_stocks);
+
     LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addAction(INVALID);
@@ -81,8 +84,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
       mServiceIntent.putExtra("tag", "init");
       if (isConnected){
         startService(mServiceIntent);
-      } else{
-        networkToast();
+      }     else {
+        message = getString(        R.string.empty_stock_list_no_stocks);
       }
     }
     RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -91,12 +94,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
     mCursorAdapter = new QuoteCursorAdapter(this, null);
     recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
-            new RecyclerViewItemClickListener.OnItemClickListener() {
-              @Override public void onItemClick(View v, int position) {
-                //TODO:
-                // do something on item click
-              }
-            }));
+                                                                          new RecyclerViewItemClickListener.OnItemClickListener() {
+                                                                            @Override
+                                                                            public void onItemClick(
+                                                                                    View v,
+                                                                                    int position) {
+                                                                              //TODO:
+                                                                              // do something on item click
+                                                                            }
+                                                                          }));
     recyclerView.setAdapter(mCursorAdapter);
 
 
@@ -105,6 +111,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     fab.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         if (isConnected){
+
           new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
               .content(R.string.content_test)
               .inputType(InputType.TYPE_CLASS_TEXT)
@@ -159,6 +166,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
       // are updated.
       GcmNetworkManager.getInstance(this).schedule(periodicTask);
     }
+    else {
+
+      findViewById(R.id.listiview_stock_empty).setVisibility(View.VISIBLE);
+
+      findViewById(R.id.recycler_view).setVisibility(View.INVISIBLE);
+      ((TextView)findViewById(R.id.listiview_stock_empty)).setText(getString(R.string.empty_stock_list_out_of_date));
+
+
+    }
+
   }
 
 
@@ -222,6 +239,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   public void onLoadFinished(Loader<Cursor> loader, Cursor data){
     mCursorAdapter.swapCursor(data);
     mCursor = data;
+    if (mCursor.getCount()==0)
+    {
+      findViewById(R.id.listiview_stock_empty).setVisibility(View.VISIBLE);
+      ((TextView)findViewById(R.id.listiview_stock_empty)).setText(message);
+    }
   }
 
   @Override
@@ -235,7 +257,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     public void onReceive(Context context, Intent intent) {
       if(intent.getAction().equals(INVALID)) {
-        Utils.errorToast(MyStocksActivity.this,"Stock DNE");
+        Utils.errorToast(MyStocksActivity.this,getString(R.string.stock_dne));
       }
     }
   };
