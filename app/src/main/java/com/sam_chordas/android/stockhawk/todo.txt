@@ -3,9 +3,6 @@ TODO Each stock quote on the main screen is clickable and leads to a new screen 
 TODO recheck internet connection
 
 
-TODO Stock Hawk does not crash when a user searches for a non-existent stock.
-
-
 
 
 TODO Stock Hawk Stocks can be displayed in a collection widget.

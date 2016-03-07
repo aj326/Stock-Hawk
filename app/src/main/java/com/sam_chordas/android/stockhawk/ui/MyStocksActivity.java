@@ -1,14 +1,17 @@
 package com.sam_chordas.android.stockhawk.ui;
 
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,6 +40,7 @@ import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallb
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
+
   /**
    * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
    */
@@ -53,6 +57,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   private Cursor mCursor;
   boolean isConnected;
 
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -64,6 +69,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     isConnected = activeNetwork != null &&
         activeNetwork.isConnectedOrConnecting();
     setContentView(R.layout.activity_my_stocks);
+    LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(INVALID);
+    bManager.registerReceiver(bReceiver, intentFilter);
     // The intent service is for executing immediate pulls from the Yahoo API
     // GCMTaskService can only schedule tasks, they cannot execute immediately
     mServiceIntent = new Intent(this, StockIntentService.class);
@@ -113,6 +122,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     // Add the stock to DB
                     mServiceIntent.putExtra("tag", "add");
                     mServiceIntent.putExtra("symbol", input.toString());
+//                    bindService(mServiceIntent,)
                     startService(mServiceIntent);
                   }
                 }
@@ -218,5 +228,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   public void onLoaderReset(Loader<Cursor> loader){
     mCursorAdapter.swapCursor(null);
   }
+//  http://stackoverflow.com/questions/12997463/send-intent-from-service-to-activity
+  public static final String INVALID = "invalid_stock";
+
+  private BroadcastReceiver bReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if(intent.getAction().equals(INVALID)) {
+        Utils.errorToast(MyStocksActivity.this,"Stock DNE");
+      }
+    }
+  };
 
 }

@@ -46,7 +46,11 @@ public class Utils {
         if (count == 1){
           jsonObject = jsonObject.getJSONObject("results")
               .getJSONObject("quote");
-          Log.d(LOG_TAG,jsonObject.toString());
+          Log.d("Ask",jsonObject.getString("Ask"));
+          if(jsonObject.getString("Ask").equals("null")){
+            Log.d(LOG_TAG,"Returning Null");
+            return null;
+          }
           batchOperations.add(buildBatchOperation(jsonObject));
         } else{
           resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
