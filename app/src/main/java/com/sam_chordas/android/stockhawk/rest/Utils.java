@@ -43,7 +43,7 @@ public class Utils {
 //  public static final int LOCATION_STATUS_UNKNOWN = 3;
 //  public static final int LOCATION_STATUS_INVALID = 4;
 
-  public static ArrayList quoteJsonToContentVals(String JSON){
+  public static ArrayList quoteJsonToContentVals(String JSON, boolean isUpdate){
     ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
     JSONObject jsonObject = null;
     JSONArray resultsArray = null;
@@ -53,6 +53,7 @@ public class Utils {
       if (jsonObject != null && jsonObject.length() != 0){
         jsonObject = jsonObject.getJSONObject("query");
         int count = Integer.parseInt(jsonObject.getString("count"));
+        //check if the only stock is valid
         if (count == 1){
           jsonObject = jsonObject.getJSONObject("results")
               .getJSONObject("quote");
@@ -61,14 +62,15 @@ public class Utils {
             Log.d(LOG_TAG,"Returning Null");
             return null;
           }
-          batchOperations.add(buildBatchOperation(jsonObject));
+          //new insert
+          batchOperations.add(buildBatchOperation(jsonObject,isUpdate));
         } else{
           resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
 
           if (resultsArray != null && resultsArray.length() != 0){
             for (int i = 0; i < resultsArray.length(); i++){
               jsonObject = resultsArray.getJSONObject(i);
-              batchOperations.add(buildBatchOperation(jsonObject));
+              batchOperations.add(buildBatchOperation(jsonObject,isUpdate));
             }
           }
         }
@@ -101,11 +103,13 @@ public class Utils {
     return change;
   }
 
-  public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject){
-    ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
-        QuoteProvider.Quotes.CONTENT_URI);
+  public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject, boolean isUpdate){
+    ContentProviderOperation.Builder builder = isUpdate? ContentProviderOperation.newUpdate(
+        QuoteProvider.Quotes.CONTENT_URI): ContentProviderOperation.newInsert(QuoteProvider.Quotes.CONTENT_URI);
     try {
+      Log.d(LOG_TAG,"buildBatchOp"+jsonObject.getString("symbol"));
       String change = jsonObject.getString("Change");
+
       builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
       builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
       builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
@@ -121,6 +125,7 @@ public class Utils {
     } catch (JSONException e){
       e.printStackTrace();
     }
+
     return builder.build();
   }
 }

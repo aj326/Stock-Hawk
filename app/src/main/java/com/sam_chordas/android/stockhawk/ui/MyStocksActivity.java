@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -63,6 +64,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+      Stetho.initialize(
+              Stetho.newInitializerBuilder(this)
+                      .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                      .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
+                      .build());
     mContext = this;
     ConnectivityManager cm =
         (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -85,7 +91,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
       if (isConnected){
         startService(mServiceIntent);
       }     else {
-        message = getString(        R.string.empty_stock_list_no_stocks);
+        message = getString(R.string.empty_stock_list_no_stocks);
       }
     }
     RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -99,8 +105,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                             public void onItemClick(
                                                                                     View v,
                                                                                     int position) {
-                                                                              //TODO:
-                                                                              // do something on item click
+                                                                              Toast.makeText(mContext,
+                                                                                             mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
                                                                             }
                                                                           }));
     recyclerView.setAdapter(mCursorAdapter);
