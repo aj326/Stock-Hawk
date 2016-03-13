@@ -59,6 +59,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   private Cursor mCursor;
   private String message;
   boolean isConnected;
+  public static final String INVALID = "invalid_stock";
+  public static final String DETAIL = "detail";
 
 
   @Override
@@ -105,8 +107,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                             public void onItemClick(
                                                                                     View v,
                                                                                     int position) {
+                                                                              String symbol = mCursor.getString(1);
                                                                               Toast.makeText(mContext,
                                                                                              mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
+                                                                              Intent detail = new Intent(DETAIL,
+                                                                                                          QuoteProvider.Quotes.withSymbol(symbol),mContext,  StockDetailActivity.class);
+                                                                              detail.putExtra("symbol",symbol);
+                                                                              startActivity(detail);
                                                                             }
                                                                           }));
     recyclerView.setAdapter(mCursorAdapter);
@@ -174,10 +181,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     }
     else {
 
-      findViewById(R.id.listiview_stock_empty).setVisibility(View.VISIBLE);
+      findViewById(R.id.view_stock_empty).setVisibility(View.VISIBLE);
 
       findViewById(R.id.recycler_view).setVisibility(View.INVISIBLE);
-      ((TextView)findViewById(R.id.listiview_stock_empty)).setText(getString(R.string.empty_stock_list_out_of_date));
+      ((TextView)findViewById(R.id.view_stock_empty)).setText(getString(R.string.empty_stock_list_out_of_date));
 
 
     }
@@ -247,8 +254,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     mCursor = data;
     if (mCursor.getCount()==0)
     {
-      findViewById(R.id.listiview_stock_empty).setVisibility(View.VISIBLE);
-      ((TextView)findViewById(R.id.listiview_stock_empty)).setText(message);
+      findViewById(R.id.view_stock_empty).setVisibility(View.VISIBLE);
+      ((TextView)findViewById(R.id.view_stock_empty)).setText(message);
     }
   }
 
@@ -257,7 +264,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     mCursorAdapter.swapCursor(null);
   }
 //  http://stackoverflow.com/questions/12997463/send-intent-from-service-to-activity
-  public static final String INVALID = "invalid_stock";
 
   private BroadcastReceiver bReceiver = new BroadcastReceiver() {
     @Override

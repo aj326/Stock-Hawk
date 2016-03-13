@@ -15,6 +15,8 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.QueryMulti;
@@ -27,15 +29,22 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.retrofit.QuoteFetchService;
 import com.sam_chordas.android.stockhawk.retrofit.QuotesFetchService;
 import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
+import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.joda.time.DateTime;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,24 +61,125 @@ import retrofit.Retrofit;
 public class StockTaskService extends GcmTaskService {
     private String LOG_TAG = StockTaskService.class.getSimpleName();
 
-    private OkHttpClient client = new OkHttpClient();
+//    private OkHttpClient client = new OkHttpClient();
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate, isInit, isAdd;
     private StringBuilder symbols;
+
     final Retrofit retrofit = new Retrofit.Builder().baseUrl(
             "https://query.yahooapis.com").addConverterFactory(
-            GsonConverterFactory.create()).build();
-
+            GsonConverterFactory.create(new GsonBuilder().disableHtmlEscaping().create())).build();
+    static  HttpUrl url = HttpUrl.parse("http://ichart.finance.yahoo.com/table.csv");
+    private final OkHttpClient client = new OkHttpClient();
 
     public StockTaskService() {
     }
+
 
 
     public StockTaskService(Context context) {
         mContext = context;
     }
 
+    private void plotStock(String symbol) throws GSMFail {
+
+        DateTime dt = new DateTime(new Date());
+
+        HttpUrl myUrl = url.newBuilder()
+//        s 	Ticker symbol (YHOO in the example)
+//        a     The "from month"
+//        b 	The "from day"
+//        c 	The "from year"
+//        d 	The "to month"
+//        e 	The "to day"
+//        f 	The "to year"
+//        g 	d for day, m for month, y for yearly
+                .addQueryParameter("s", symbol)
+//                .addQueryParameter("a","1")
+//                .addQueryParameter("b", "1")
+//                .addQueryParameter("c", "2010")
+//                .addQueryParameter("d", String.valueOf(dt.getMonthOfYear()))
+//                .addQueryParameter("e", String.valueOf(dt.getDayOfMonth()))
+//                .addQueryParameter("f",String.valueOf(dt.getYear()))
+                .addQueryParameter("g", "m")
+                .addQueryParameter("ignore", ".csv")
+                .build();
+        Log.d(LOG_TAG,myUrl.toString());
+
+        Request request = new Request.Builder().url(myUrl).build();
+
+
+        final Gson gson = new Gson();
+        client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+//                StockHistory stock= gson.fromJson(response.body().charStream(), StockHistory.class);
+//                Parcelable wrapped = Parcels.wrap(stock.getQuery().getResults().getQuote());
+
+//                result.getQuote()
+
+                BufferedReader reader = new BufferedReader(
+                                response.body().charStream()
+                        );
+                Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
+                ArrayList<String> dates = new ArrayList<String>();
+                ArrayList<String> values = new ArrayList<String>();
+                for (CSVRecord record : records) {
+                    Log.d(LOG_TAG, (record.get("Date")));
+                    dates.add(record.get("Date"));
+                    values.add(record.get("Close"));
+                }
+                Intent intent = new Intent("plot");
+                intent.putStringArrayListExtra("date", dates);
+                intent.putStringArrayListExtra("val", values);
+
+                LocalBroadcastManager.getInstance(mContext).sendBroadcast(
+                        intent);
+
+
+            }
+        });
+//        options.put("format", "json");
+//        options.put("env", "store://datatables.org/alltableswithkeys");
+//        StockHisService stockHisService = retrofit.create(StockHisService.class);
+//        String s = urlString.replace("%3D", "=");
+//        Log.d(LOG_TAG,"Grabbing Historical Stock info "+ s);
+//        Call<StockHistory> call = stockHisService.queryDetails(s, options);
+//
+//        call.enqueue(
+//                new Callback<StockHistory>() {
+//                    @Override
+//                    public void onResponse(
+//                            retrofit.Response<StockHistory> response,
+//                            Retrofit retrofit) {
+//                        StockHistory stock = response.body();
+//                        if(stock!=null)
+//                        {
+//                            Parcelable wrapped = Parcels.wrap(stock.getQuery().getResults().getQuote());
+//                            Intent intent = new Intent("plot");
+//                            intent.putExtra("data",wrapped);
+//                            LocalBroadcastManager.getInstance(mContext).sendBroadcast(
+//                                    intent);
+//
+//
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Throwable t) {
+//                    }
+//                });
+
+
+
+    }
+//    TODO clean up, refactor
     private void insertData(String url) throws GSMFail{
         final Map<String, String> options = new HashMap<>();
         options.put("format", "json");
@@ -77,7 +187,6 @@ public class StockTaskService extends GcmTaskService {
         QuoteFetchService quoteFetchService = retrofit.create(QuoteFetchService.class);
         Call<QuerySingular> call = quoteFetchService.queryList(url, options);
         Log.d(LOG_TAG, "INSERTING data");
-        final Integer[] result = new Integer[1];
         call.enqueue(new Callback<QuerySingular>() {
 
                          @Override
@@ -86,8 +195,7 @@ public class StockTaskService extends GcmTaskService {
                                  Retrofit retrofit) {
                              QuerySingular queries = response.body();
                              if (queries != null) {
-                                 Query query = null;
-                                 query = queries.getQuery();
+                                 Query query = queries.getQuery();
                                  Log.d(LOG_TAG, "INSERT: date: " + query.getCreated());
                                  com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Results results = query.getResults();
                                  com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Quote quote = results.getQuote();
@@ -134,7 +242,7 @@ public class StockTaskService extends GcmTaskService {
         final Map<String, String> options = new HashMap<>();
         options.put("format", "json");
         options.put("env", "store://datatables.org/alltableswithkeys");
-        Log.d(LOG_TAG, "UPDAte");
+        Log.d(LOG_TAG, "UPDATE");
         QuotesFetchService quotesFetchService = retrofit.create(QuotesFetchService.class);
         Call<QueryMulti> call = quotesFetchService.queryList(url, options);
         final Integer[] result = new Integer[1];
@@ -239,9 +347,23 @@ public class StockTaskService extends GcmTaskService {
         if (mContext == null) {
             mContext = this;
         }
+        String urlString;
         symbols = new StringBuilder();
         StringBuilder urlStringBuilder = new StringBuilder();
+        if(params.getTag().equals("chart")){
+
+
+            try {
+                plotStock(
+                        params.getExtras().getString("symbol"));
+
+            } catch (GSMFail gsmFail) {
+                return GcmNetworkManager.RESULT_FAILURE;
+
+        }}
+        else
         try {
+
             // Base URL for the Yahoo query
 //      urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
             urlStringBuilder.append(
@@ -299,32 +421,28 @@ public class StockTaskService extends GcmTaskService {
                 e.printStackTrace();
             }
         }
-        String urlString;
-        String getResponse;
-        if (urlStringBuilder != null) {
-            urlString = urlStringBuilder.toString();
-            try {
-                urlString = URLDecoder.decode(urlString, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            Log.d(LOG_TAG, urlString);
-            if(isAdd)
-            {
-                try {
-                    insertData(urlString);
-                } catch (GSMFail gsmFail) {
-                return GcmNetworkManager.RESULT_FAILURE;
-            }
-
-            }
-            try {
-                updateData(urlString, isInit);
-            } catch (GSMFail gsmFail) {
-                return GcmNetworkManager.RESULT_FAILURE;
-            }
+        urlString = urlStringBuilder.toString();
+        try {
+            urlString = URLDecoder.decode(urlString, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
-//      try{
+        Log.d(LOG_TAG, urlString);
+        if(isAdd)
+        {
+            try {
+                insertData(urlString);
+            } catch (GSMFail gsmFail) {
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+
+        }
+        try {
+            updateData(urlString, isInit);
+        } catch (GSMFail gsmFail) {
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+        //      try{
 //        getResponse = fetchData(urlString);
 //        try {
 //          ContentValues contentValues = new ContentValues();
@@ -356,6 +474,8 @@ public class StockTaskService extends GcmTaskService {
 //    }
         return GcmNetworkManager.RESULT_SUCCESS;
     }
+
+
 
 
     private class GSMFail extends Exception {
