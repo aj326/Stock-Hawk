@@ -57,20 +57,23 @@ public class StockDetailActivity extends AppCompatActivity implements View.OnTou
                 //mySimpleXYPlot.disableAllMarkup();
                 series = new SimpleXYSeries("Date");
                 for(int i = 0; i < mDates.size(); i++) {
-                    series.addLast(i, Float.parseFloat(mValues.get(i)));
+                    series.addFirst(i, Float.parseFloat(mValues.get(i)));
                 }
                 MyIndexFormat mif = new MyIndexFormat ();
                 String dates[] = new String[mDates.size()];
                 mDates.toArray(dates);
                 mif.Labels = dates;
-                mySimpleXYPlot.addSeries(series,
-                                         new LineAndPointFormatter(Color.rgb(0, 0, 0), null,
-                                                                   Color.rgb(0, 0, 150), null));
                 mySimpleXYPlot.getGraphWidget().setRangeValueFormat(
                         new DecimalFormat("#####"));
                 mySimpleXYPlot.getGraphWidget().setDomainValueFormat(
                         mif);
+
+                mySimpleXYPlot.addSeries(series,
+                                         new LineAndPointFormatter(Color.rgb(0, 0, 0), null,
+                                                                   Color.rgb(0, 0, 150), null));
                 mySimpleXYPlot.calculateMinMaxVals();
+
+
                 minXY = new PointF(mySimpleXYPlot.getCalculatedMinX().floatValue(),
                                    mySimpleXYPlot.getCalculatedMinY().floatValue());
                 maxXY = new PointF(mySimpleXYPlot.getCalculatedMaxX().floatValue(),

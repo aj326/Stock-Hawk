@@ -96,9 +96,9 @@ public class StockTaskService extends GcmTaskService {
 //        f 	The "to year"
 //        g 	d for day, m for month, y for yearly
                 .addQueryParameter("s", symbol)
-//                .addQueryParameter("a","1")
-//                .addQueryParameter("b", "1")
-//                .addQueryParameter("c", "2010")
+                .addQueryParameter("a", String.valueOf(dt.getMonthOfYear()))
+                .addQueryParameter("b", String.valueOf(dt.getDayOfMonth()))
+                .addQueryParameter("c", String.valueOf(dt.getYear() - 1))
 //                .addQueryParameter("d", String.valueOf(dt.getMonthOfYear()))
 //                .addQueryParameter("e", String.valueOf(dt.getDayOfMonth()))
 //                .addQueryParameter("f",String.valueOf(dt.getYear()))
