@@ -6,6 +6,8 @@ import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+
 /**
  * Created by sam_chordas on 10/6/15.
  *  Credit to skyfishjy gist:
@@ -16,12 +18,15 @@ public abstract class CursorRecyclerViewAdapter <VH extends RecyclerView.ViewHol
   private static final String LOG_TAG = CursorRecyclerViewAdapter.class.getSimpleName();
   private Cursor mCursor;
   private boolean dataIsValid;
-  private int rowIdColumn;
+  private int rowIdColumn, rowSymbolColumn;
   private DataSetObserver mDataSetObserver;
   public CursorRecyclerViewAdapter(Context context, Cursor cursor){
     mCursor = cursor;
     dataIsValid = cursor != null;
     rowIdColumn = dataIsValid ? mCursor.getColumnIndex("_id") : -1;
+//    Log.d(LOG_TAG,dataIsValid+" "+ mCursor.getColumnIndex(QuoteColumns.SYMBOL) );
+    rowSymbolColumn= dataIsValid ? mCursor.getColumnIndex(QuoteColumns.SYMBOL) : -1;
+
     mDataSetObserver = new NotifyingDataSetObserver();
     if (dataIsValid){
       mCursor.registerDataSetObserver(mDataSetObserver);
@@ -46,6 +51,13 @@ public abstract class CursorRecyclerViewAdapter <VH extends RecyclerView.ViewHol
       return mCursor.getLong(rowIdColumn);
     }
     return 0;
+  }
+   public String getSymbol(int position) {
+    if (dataIsValid && mCursor != null && mCursor.moveToPosition(position)){
+      Log.d(LOG_TAG, "pos, id  = " + position + " , " +mCursor.getString(rowSymbolColumn) );
+      return mCursor.getString(rowSymbolColumn);
+    }
+    return null;
   }
 
   @Override public void setHasStableIds(boolean hasStableIds) {

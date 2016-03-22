@@ -18,6 +18,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -100,19 +101,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
     getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
-    mCursorAdapter = new QuoteCursorAdapter(this, null);
+    mCursorAdapter = new QuoteCursorAdapter(this, getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,null,null,null,null));
     recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
                                                                           new RecyclerViewItemClickListener.OnItemClickListener() {
                                                                             @Override
                                                                             public void onItemClick(
                                                                                     View v,
                                                                                     int position) {
-                                                                              String symbol = mCursor.getString(1);
                                                                               Toast.makeText(mContext,
-                                                                                             mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
+                                                                                             mCursorAdapter.getSymbol(position)+ " " + mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
                                                                               Intent detail = new Intent(DETAIL,
-                                                                                                          QuoteProvider.Quotes.withSymbol(symbol),mContext,  StockDetailActivity.class);
-                                                                              detail.putExtra("symbol",symbol);
+                                                                                                          QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  StockDetailActivity.class);
+                                                                              detail.putExtra("symbol", mCursorAdapter.getSymbol(position));
+                                                                              Log.d("oonClick","Symbol to send to detail activity: "+  mCursorAdapter.getSymbol(position));
                                                                               startActivity(detail);
                                                                             }
                                                                           }));

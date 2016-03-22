@@ -17,6 +17,7 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sam_chordas.android.stockhawk.data.HistColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.QueryMulti;
@@ -82,7 +83,7 @@ public class StockTaskService extends GcmTaskService {
         mContext = context;
     }
 
-    private void plotStock(String symbol) throws GSMFail {
+    private void plotStock(final String symbol) throws GSMFail {
 
         DateTime dt = new DateTime(new Date());
 
@@ -118,10 +119,8 @@ public class StockTaskService extends GcmTaskService {
 
             @Override
             public void onResponse(Response response) throws IOException {
-//                StockHistory stock= gson.fromJson(response.body().charStream(), StockHistory.class);
-//                Parcelable wrapped = Parcels.wrap(stock.getQuery().getResults().getQuote());
+                ContentValues contentValues;
 
-//                result.getQuote()
 
                 BufferedReader reader = new BufferedReader(
                                 response.body().charStream()
@@ -130,13 +129,19 @@ public class StockTaskService extends GcmTaskService {
                 ArrayList<String> dates = new ArrayList<String>();
                 ArrayList<String> values = new ArrayList<String>();
                 for (CSVRecord record : records) {
+//                    ContentResolver.
                     Log.d(LOG_TAG, (record.get("Date")));
+                    contentValues = new ContentValues();
+                    contentValues.put(HistColumns.SYMBOL, symbol);
+                    contentValues.put(HistColumns.DATE,record.get("Date"));
+                    contentValues.put(HistColumns.VALUE,record.get("Close"));
+                    mContext.getContentResolver().insert(QuoteProvider.History.withSymbol(symbol),contentValues);
+
                     dates.add(record.get("Date"));
                     values.add(record.get("Close"));
                 }
                 Intent intent = new Intent("plot");
-                intent.putStringArrayListExtra("date", dates);
-                intent.putStringArrayListExtra("val", values);
+                intent.putExtra("symbol", symbol);
 
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(
                         intent);
