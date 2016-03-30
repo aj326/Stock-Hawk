@@ -67,6 +67,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("plot")) {
+//                intent.getD
                 Log.d(LOG_TAG, "received");
                 mSymbol = intent.getStringExtra("symbol");
                 Bundle args = new Bundle();
@@ -162,9 +163,9 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
 
             mChart.addData(lineSet);
             mChart.setBorderSpacing(Tools.fromDpToPx(5))
-                    .setAxisBorderValues(Math.round(min), Math.round(max))
+                    .setAxisBorderValues(Math.round(min)-1, Math.round(max)+1)
                     .setYLabels(AxisController.LabelPosition.OUTSIDE)
-                    .setLabelsColor(Color.parseColor("#6a84c3")).setStep(5)
+                    .setLabelsColor(Color.parseColor("#6a84c3")).setStep((max-min)>100?Math.round((max-min))/10:5)
                     .setXAxis(false)
 //                    .setLabelsFormat()
                     .setYAxis(false);
@@ -172,6 +173,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
 
         }
     }
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader)

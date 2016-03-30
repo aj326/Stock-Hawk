@@ -67,6 +67,7 @@ public class StockTaskService extends GcmTaskService {
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate, isInit, isAdd;
     private StringBuilder symbols;
+    public final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_UPDATED";
 
     final Retrofit retrofit = new Retrofit.Builder().baseUrl(
             "https://query.yahooapis.com").addConverterFactory(
@@ -84,7 +85,7 @@ public class StockTaskService extends GcmTaskService {
     }
 
     private void plotStock(final String symbol) throws GSMFail {
-
+//        if()
         DateTime dt = new DateTime(new Date());
 
         HttpUrl myUrl = url.newBuilder()
@@ -240,6 +241,7 @@ public class StockTaskService extends GcmTaskService {
                          }
                      }
         );
+        updateWidgets();
 //        return result[0];
     }
 
@@ -330,20 +332,17 @@ public class StockTaskService extends GcmTaskService {
                         e.printStackTrace();
                     }
                 }
-
+            updateWidgets();
             }
         });
     }
 
-    String fetchData(String url) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-        Response response = client.newCall(request).execute();
-        return response.body().string();
-    }
-
-    public void grabQuotes() {
+    private void updateWidgets() {
+        Context context = mContext;
+        // Setting the package ensures that only components in our app will receive the broadcast
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+                .setPackage(context.getPackageName());
+        context.sendBroadcast(dataUpdatedIntent);
     }
 
     @Override

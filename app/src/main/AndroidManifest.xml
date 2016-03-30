@@ -61,7 +61,7 @@
         </receiver>
 
         <service
-            android:name=".widget.QuoteWidgetRemoteViewsService"
+            android:name=".widget.StockDetailWidgetRemoteViewService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS"/>
     </application>
