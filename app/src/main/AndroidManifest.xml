@@ -23,7 +23,8 @@
             android:name="com.google.android.gcm.demo.permission.C2D_MESSAGE" />
         <activity
             android:name="com.sam_chordas.android.stockhawk.ui.MyStocksActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,8 +34,11 @@
 
         <activity android:name=".ui.StockDetailActivity"
                   android:label="Stock"
-                  android:parentActivityName=".ui.MyStocksActivity">
-            <meta-data
+                  android:parentActivityName=".ui.MyStocksActivity"
+            android:screenOrientation="landscape"
+                  android:theme="@style/AppTheme">
+
+        <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MyStocksActivity"/>
         </activity>

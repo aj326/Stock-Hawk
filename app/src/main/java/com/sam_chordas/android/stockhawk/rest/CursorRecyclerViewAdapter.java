@@ -76,6 +76,7 @@ public abstract class CursorRecyclerViewAdapter <VH extends RecyclerView.ViewHol
     }
 
     onBindViewHolder(viewHolder, mCursor);
+//    viewHolder
   }
 
   public Cursor swapCursor(Cursor newCursor){
@@ -107,7 +108,6 @@ public abstract class CursorRecyclerViewAdapter <VH extends RecyclerView.ViewHol
       super.onChanged();
       dataIsValid = true;
       notifyDataSetChanged();
-
     }
 
     @Override public void onInvalidated() {

@@ -1,6 +1,8 @@
 TODO Stock Hawk app has content descriptions for all buttons.
 
-TODO design for collection widget and plot
+TODO put all strings in xml
+
+TODO design for collection widget
 
 TODO error handling for network stuff is basic at best
 

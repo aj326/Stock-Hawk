@@ -113,7 +113,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                               Intent detail = new Intent(DETAIL,
                                                                                                           QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  StockDetailActivity.class);
                                                                               detail.putExtra("symbol", mCursorAdapter.getSymbol(position));
-                                                                              Log.d("oonClick","Symbol to send to detail activity: "+  mCursorAdapter.getSymbol(position));
+                                                                              Log.d("oonClick",
+                                                                                    "Symbol to send to detail activity: " + mCursorAdapter.getSymbol(
+                                                                                            position));
+                                                                              v.setContentDescription("Plot: " + mCursorAdapter.getSymbol(position));
                                                                               startActivity(detail);
                                                                             }
                                                                           }));
@@ -225,9 +228,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     int id = item.getItemId();
 
     //noinspection SimplifiableIfStatement
-    if (id == R.id.action_settings) {
-      return true;
-    }
 
     if (id == R.id.action_change_units){
       // this is for changing stock changes from percent value to dollar value

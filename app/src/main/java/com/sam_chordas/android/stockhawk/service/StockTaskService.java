@@ -227,6 +227,7 @@ public class StockTaskService extends GcmTaskService {
                                  Uri s = mContext.getContentResolver().insert(
                                          QuoteProvider.Quotes.CONTENT_URI, value);
                                  Log.d(LOG_TAG, s.toString());
+
 //                                 result[0] = GcmNetworkManager.RESULT_SUCCESS;
                              }
                          }

@@ -8,10 +8,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.util.Log;
 import com.db.chart.Tools;
 import com.db.chart.model.LineSet;
 import com.db.chart.view.AxisController;
+import com.db.chart.view.ChartView;
 import com.db.chart.view.LineChartView;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.HistColumns;
@@ -93,6 +95,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
             Intent mServiceIntent = new Intent(this, StockIntentService.class);
             mServiceIntent.putExtra("tag", "chart");
             mServiceIntent.putExtra("symbol", getIntent().getStringExtra("symbol"));
+            setTitle(getIntent().getStringExtra("symbol").toUpperCase());
             LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction("plot");
@@ -132,7 +135,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToLast()) {
-            LineSet lineSet = new LineSet();
+            final LineSet lineSet = new LineSet();
             final int rowDateId = data.getColumnIndex(HistColumns.DATE);
             final int rowValueId = data.getColumnIndex(HistColumns.VALUE);
             float min, max,val;
@@ -154,19 +157,24 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
             }
             while (data.moveToPrevious());
 //            LineSet dataset = new LineSet(mLabels, mValues[0]);
-            lineSet.setColor(Color.parseColor("#758cbb"))
-                    .setFill(Color.parseColor("#2d374c"))
-                    .setDotsColor(Color.parseColor("#758cbb"))
+
+            lineSet.setColor(ContextCompat.getColor(mContext, R.color.material_blue_700))
+                    .setDotsColor(ContextCompat.getColor(mContext, R.color.material_blue_900))
                     .setThickness(4);
 //                        .setDashed(new float[]{10f, 10f})
 //                        .beginAt(5);
 
             mChart.addData(lineSet);
+            Paint paint= new Paint();
+            paint.setColor(ContextCompat.getColor(mContext,R.color.md_divider_black));
             mChart.setBorderSpacing(Tools.fromDpToPx(5))
-                    .setAxisBorderValues(Math.round(min)-1, Math.round(max)+1)
+//                    .
+                    .setAxisBorderValues(Math.round(min) - 1, Math.round(max) + 1)
                     .setYLabels(AxisController.LabelPosition.OUTSIDE)
-                    .setLabelsColor(Color.parseColor("#6a84c3")).setStep((max-min)>100?Math.round((max-min))/10:5)
+                    .setLabelsColor(ContextCompat.getColor(mContext, R.color.material_blue_500)).setStep((max-min)>100?Math.round((max-min))/10:5)
                     .setXAxis(false)
+                    .setAxisColor(ContextCompat.getColor(mContext, R.color.material_blue_700))
+                            .setGrid(ChartView.GridType.FULL,paint)
 //                    .setLabelsFormat()
                     .setYAxis(false);
             mChart.show();

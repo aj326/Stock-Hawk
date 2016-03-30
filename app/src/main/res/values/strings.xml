@@ -15,6 +15,9 @@
   <string name="empty_stock_list_out_of_date">Offline: Stocks out of date</string>
   <string name="empty_stock_list_no_stocks">Offline: No stocks to show</string>
   <string name="stock_dne">Stock DNE</string>
+  <string name="monthly">Monthly</string>
+  <string name="chart">chart</string>
+  <string name="fab">Add new Stock</string>
 
 
 </resources>
