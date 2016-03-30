@@ -68,7 +68,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
     private BroadcastReceiver bReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("plot")) {
+            if (intent.getAction().equals("com.sam_chordas.android.stockhawk.app.ACTION_PLOT")) {
 //                intent.getD
                 Log.d(LOG_TAG, "received");
                 mSymbol = intent.getStringExtra("symbol");
@@ -98,7 +98,7 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
             setTitle(getIntent().getStringExtra("symbol").toUpperCase());
             LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction("plot");
+            intentFilter.addAction("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
             bManager.registerReceiver(bReceiver, intentFilter);
             if (isConnected) {
                 startService(mServiceIntent);

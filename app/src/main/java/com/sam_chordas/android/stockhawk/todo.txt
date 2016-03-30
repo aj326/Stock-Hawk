@@ -1,11 +1,7 @@
-TODO Stock Hawk app has content descriptions for all buttons.
+TODO widget Does not launch plot activity
 
-TODO put all strings in xml
-
-TODO design for collection widget
+TODO replace Toast with Snackbar
 
 TODO error handling for network stuff is basic at best
 
 TODO major refactor!
-
-TODO error: widget does not update when stock added/deleted from cursor!

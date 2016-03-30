@@ -4,9 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="72dp"
     android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingLeft="16dp"
+              android:paddingLeft="16dp"
     android:paddingRight="16dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     >
   <TextView
       android:id="@+id/stock_symbol"
@@ -31,7 +32,7 @@
         android:paddingEnd="10sp"
 
         tools:text="1000.00"
-        />
+        android:gravity="left|start"/>
     <TextView
         android:id="@+id/change"
         android:background="@drawable/percent_change_pill"
@@ -40,6 +41,8 @@
         android:layout_height="wrap_content"
         android:paddingLeft="3dp"
         android:paddingRight="3dp"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
         tools:text="100%"
         />
   </LinearLayout>

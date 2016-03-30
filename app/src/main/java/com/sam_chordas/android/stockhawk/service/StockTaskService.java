@@ -141,7 +141,7 @@ public class StockTaskService extends GcmTaskService {
                     dates.add(record.get("Date"));
                     values.add(record.get("Close"));
                 }
-                Intent intent = new Intent("plot");
+                Intent intent = new Intent("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
                 intent.putExtra("symbol", symbol);
 
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(
@@ -167,7 +167,7 @@ public class StockTaskService extends GcmTaskService {
 //                        if(stock!=null)
 //                        {
 //                            Parcelable wrapped = Parcels.wrap(stock.getQuery().getResults().getQuote());
-//                            Intent intent = new Intent("plot");
+//                            Intent intent = new Intent("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
 //                            intent.putExtra("data",wrapped);
 //                            LocalBroadcastManager.getInstance(mContext).sendBroadcast(
 //                                    intent);
@@ -253,7 +253,6 @@ public class StockTaskService extends GcmTaskService {
         Log.d(LOG_TAG, "UPDATE");
         QuotesFetchService quotesFetchService = retrofit.create(QuotesFetchService.class);
         Call<QueryMulti> call = quotesFetchService.queryList(url, options);
-        final Integer[] result = new Integer[1];
         call.enqueue(new Callback<QueryMulti>() {
 
             @Override

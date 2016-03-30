@@ -4,7 +4,8 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-    android:padding="@dimen/widget_margin">
+    android:padding="@dimen/widget_margin"
+              android:background="@color/background_material_dark">
 
     <FrameLayout
         android:id="@+id/widget"
@@ -30,8 +31,8 @@
             android:layout_height="match_parent"
             android:divider="@null"
             android:dividerHeight="0dp"
-            tools:listitem="@layout/widget_collection_item"
-            />
+            tools:listitem="@layout/list_item_quote"
+            android:background="@color/background_material_dark"/>
         <TextView
             android:id="@+id/widget_empty"
             android:layout_width="match_parent"
@@ -39,7 +40,8 @@
             android:gravity="center"
             android:fontFamily="sans-serif-condensed"
             android:textAppearance="?android:textAppearanceLarge"
-            android:text="@string/empty_stock_list"/>
+            android:text="@string/empty_stock_list"
+            />
 
     </FrameLayout>
 
