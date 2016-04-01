@@ -8,6 +8,7 @@
     android:paddingRight="16dp"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
+    android:id="@+id/widget_list_item"
     >
   <TextView
       android:id="@+id/stock_symbol"

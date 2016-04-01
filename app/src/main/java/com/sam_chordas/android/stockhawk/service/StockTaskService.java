@@ -30,6 +30,7 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.retrofit.QuoteFetchService;
 import com.sam_chordas.android.stockhawk.retrofit.QuotesFetchService;
 import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
+import com.sam_chordas.android.stockhawk.ui.StockDetailActivity;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -68,6 +69,7 @@ public class StockTaskService extends GcmTaskService {
     private boolean isUpdate, isInit, isAdd;
     private StringBuilder symbols;
     public final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_UPDATED";
+
 
     final Retrofit retrofit = new Retrofit.Builder().baseUrl(
             "https://query.yahooapis.com").addConverterFactory(
@@ -141,9 +143,10 @@ public class StockTaskService extends GcmTaskService {
                     dates.add(record.get("Date"));
                     values.add(record.get("Close"));
                 }
-                Intent intent = new Intent("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
+                Intent intent = new Intent(StockDetailActivity.ACTION_DATA_PLOT_POINTS_GATHERED,QuoteProvider.History.withSymbol(symbol),mContext,
+                                           StockDetailActivity.class);
                 intent.putExtra("symbol", symbol);
-
+                Log.d(LOG_TAG,"sending intent with action, symbol in extra, and uri with symbol");
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(
                         intent);
 

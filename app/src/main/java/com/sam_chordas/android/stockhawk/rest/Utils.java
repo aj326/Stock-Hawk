@@ -2,6 +2,9 @@ package com.sam_chordas.android.stockhawk.rest;
 
 import android.app.Activity;
 import android.content.ContentProviderOperation;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
@@ -31,6 +34,14 @@ public class Utils {
     toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
     toast.show();
     return;
+  }
+  public static boolean isConnected(Context context){
+    ConnectivityManager cm =
+            (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+    return activeNetwork != null &&
+                  activeNetwork.isConnectedOrConnecting();
   }
 
 //  @Retention(RetentionPolicy.SOURCE)

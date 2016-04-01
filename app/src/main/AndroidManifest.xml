@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.sam_chordas.android.stockhawk"
-          xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    package="com.sam_chordas.android.stockhawk"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     >
 
     <application
@@ -28,7 +29,6 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
@@ -51,9 +51,11 @@
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
+
             </intent-filter>
         </service>
         <service android:name="com.sam_chordas.android.stockhawk.service.StockIntentService"/>
+        <service android:name=".service.FetchPlotDataService"/>
 
         <provider
             android:name="com.sam_chordas.android.stockhawk.data.generated.QuoteProvider"

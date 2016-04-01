@@ -1,19 +1,14 @@
 package com.sam_chordas.android.stockhawk.ui;
 
 import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Paint;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -25,11 +20,17 @@ import com.db.chart.view.LineChartView;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.HistColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.service.StockIntentService;
+import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.sam_chordas.android.stockhawk.service.FetchPlotDataService;
+import com.squareup.okhttp.HttpUrl;
+import com.squareup.okhttp.OkHttpClient;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * Created by ahmed on 3/12/16.
@@ -40,95 +41,47 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
     private LineChartView mChart;
     private final int CURSOR_LOADER_ID = 0;
     private String mSymbol;
-
+    static  HttpUrl url = HttpUrl.parse("http://ichart.finance.yahoo.com/table.csv");
+    private final OkHttpClient client = new OkHttpClient();
     private final Context mContext = this;
-
-
-    private final String[] mLabels = {
-            "1 \'15",
-            "2 \'15",
-            "3 \'15",
-            "4 \'15",
-            "5 \'15",
-            "6 \'15",
-            "7 \'15",
-            "8 \'15",
-            "9 \'15",
-            "10 \'15",
-            "11 \'15",
-            "12 \'15"
-    };
-    private final float[][] mValues = {
-            {
-                    4.7f, 4.3f, 8f, 6.5f, 9.9f, 7f, 8.3f, 7.0f, 1.2f, 2.2f, 2.3f, 5f,
-            },
-            {4.5f, 2.5f, 2.5f, 9f, 4.5f, 9.5f, 5f, 8.3f, 1.8f,1.2f,2.2f,2.3f}};
-
+    public static final String ACTION_DATA_PLOT_POINTS_GATHERED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_PLOT_POINTS_GATHERED";
+    public static final String FETCH_POINTS = "com.sam_chordas.android.stockhawk.app.FETCH_POINTS";
     boolean isConnected;
-    private BroadcastReceiver bReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("com.sam_chordas.android.stockhawk.app.ACTION_PLOT")) {
-//                intent.getD
-                Log.d(LOG_TAG, "received");
-                mSymbol = intent.getStringExtra("symbol");
-                Bundle args = new Bundle();
-                args.putString("symbol", mSymbol);
-                getLoaderManager().initLoader(CURSOR_LOADER_ID, args, StockDetailActivity.this);
+    final ArrayList<String> dates = new ArrayList<String>();
+    final ArrayList<Float> values = new ArrayList<Float>();
+    final LinkedHashMap<String,Float> map =  new LinkedHashMap<>();
 
-//                setData(mDates, mValues);
-//                    mChart.centerViewTo(mDates.get());
-            }
-        }
-    };
+    float min, max;
+
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_detail);
+        mChart = (LineChartView) findViewById(R.id.chart);
+        mChart.dismiss();
+        isConnected = Utils.isConnected(mContext);
 
-        if(savedInstanceState == null) {
-            //Network Stuff
-            ConnectivityManager cm =
-                    (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            isConnected = activeNetwork != null &&
-                          activeNetwork.isConnectedOrConnecting();
-            Intent mServiceIntent = new Intent(this, StockIntentService.class);
-            mServiceIntent.putExtra("tag", "chart");
-            mServiceIntent.putExtra("symbol", getIntent().getStringExtra("symbol"));
-            setTitle(getIntent().getStringExtra("symbol").toUpperCase());
-            LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
-            bManager.registerReceiver(bReceiver, intentFilter);
-            if (isConnected) {
-                startService(mServiceIntent);
+            if (isConnected)
+            {
+                Intent fetchServiceIntent = new Intent(FETCH_POINTS,getIntent().getData(),mContext,
+                                                       FetchPlotDataService.class);
+                startService(fetchServiceIntent);
+
             }
-            setContentView(R.layout.activity_detail);
-            mChart = (LineChartView) findViewById(R.id.chart);
-        }
 
-        else{
-            mSymbol = savedInstanceState.getString("symbol");
+
+        mSymbol = getIntent().getData().getLastPathSegment();
+        setTitle(mSymbol.toUpperCase());
             Bundle args = new Bundle();
             args.putString("symbol", mSymbol);
-            setContentView(R.layout.activity_detail);
-            mChart = (LineChartView) findViewById(R.id.chart);
             getLoaderManager().initLoader(CURSOR_LOADER_ID, args, this);
         }
-
-
-//      else {
-//            findViewById(R.id.layout_chart).setVisibility(View.INVISIBLE);
-//            findViewById(R.id.view_stock_empty).setVisibility(View.VISIBLE);
-//        }
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, QuoteProvider.History.CONTENT_URI,
+        return new CursorLoader(this, QuoteProvider.History.withSymbol(args.getString("symbol","ERROR")),
                                 null,
-                                HistColumns.SYMBOL + " = ?",
-                                new String[]{args.getString("symbol","ERROR")},
+                                null,
+                                null,
                                 null);
     }
 
@@ -156,13 +109,9 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
                 max = Math.max(max,val);
             }
             while (data.moveToPrevious());
-//            LineSet dataset = new LineSet(mLabels, mValues[0]);
-
             lineSet.setColor(ContextCompat.getColor(mContext, R.color.material_blue_700))
                     .setDotsColor(ContextCompat.getColor(mContext, R.color.material_blue_900))
                     .setThickness(4);
-//                        .setDashed(new float[]{10f, 10f})
-//                        .beginAt(5);
 
             mChart.addData(lineSet);
             Paint paint= new Paint();
@@ -178,7 +127,6 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
 //                    .setLabelsFormat()
                     .setYAxis(false);
             mChart.show();
-
         }
     }
 
@@ -187,18 +135,14 @@ public class StockDetailActivity extends AppCompatActivity implements LoaderMana
     public void onLoaderReset(Loader<Cursor> loader)
 
     {
-//        mChart
         mChart.dismiss();
-//        mChart.update
     }
 
+
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putString("symbol",mSymbol);
-//        mChart.dismiss();
-//        mChart.destroyDrawingCache();
-//        mChart.
-        super.onSaveInstanceState(outState);
+    protected void onDestroy() {
+        mChart.dismiss();
+        super.onDestroy();
     }
 }
 

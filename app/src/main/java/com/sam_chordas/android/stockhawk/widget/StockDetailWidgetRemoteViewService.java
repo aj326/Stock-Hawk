@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Binder;
 import android.os.Build;
+import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -69,7 +70,7 @@ public class StockDetailWidgetRemoteViewService extends RemoteViewsService {
                     return null;
                 }
                 RemoteViews views = new RemoteViews(getPackageName(),
-                                                    R.layout.list_item_quote);
+                                                    R.layout.list_item);
                 String symbol = data.getString(data.getColumnIndex("symbol"));
                 views.setTextViewText(R.id.stock_symbol, data.getString(data.getColumnIndex("symbol")));
                 views.setTextViewText(R.id.bid_price,data.getString(data.getColumnIndex("bid_price")));
@@ -88,10 +89,10 @@ public class StockDetailWidgetRemoteViewService extends RemoteViewsService {
                                           data.getString(data.getColumnIndex("change")));
                 }
 
-                final Intent fillInIntent = new Intent("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
-
-                fillInIntent.putExtra("symbol", symbol);
-//                fillInIntent.setData(QuoteProvider.Quotes.withSymbol(symbol));
+                final Intent fillInIntent = new Intent();
+                fillInIntent.setData(QuoteProvider.Quotes.withSymbol(symbol));
+//                fillInIntent.
+                Log.d(LOG_TAG,fillInIntent.toString());
                 views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
                 return views;
             }
@@ -103,7 +104,7 @@ public class StockDetailWidgetRemoteViewService extends RemoteViewsService {
 
             @Override
             public RemoteViews getLoadingView() {
-                return new RemoteViews(getPackageName(), R.layout.list_item_quote);
+                return new RemoteViews(getPackageName(), R.layout.list_item);
             }
 
             @Override

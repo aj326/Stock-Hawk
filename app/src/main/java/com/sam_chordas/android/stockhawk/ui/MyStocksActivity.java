@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -61,7 +59,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   private String message;
   boolean isConnected;
   public static final String INVALID = "invalid_stock";
-  public static final String DETAIL = "detail";
+  public static final String MAIN_TO_DETAIL = "com.sam_chordas.android.stockhawk.app.MAIN_TO_DETAIL";
+  public static final String ACTION_PLOT = "com.sam_chordas.android.stockhawk.app.ACTION_PLOT";
 
 
   @Override
@@ -73,12 +72,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                       .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
                       .build());
     mContext = this;
-    ConnectivityManager cm =
-        (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-    isConnected = activeNetwork != null &&
-        activeNetwork.isConnectedOrConnecting();
+    isConnected = Utils.isConnected(mContext);
     setContentView(R.layout.activity_my_stocks);
 
     LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
@@ -110,14 +104,18 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                                     int position) {
                                                                               Toast.makeText(mContext,
                                                                                              mCursorAdapter.getSymbol(position)+ " " + mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
-                                                                              Intent detail = new Intent(DETAIL,
+
+                                                                              Intent detailActivityIntent = new Intent(
+                                                                                      MAIN_TO_DETAIL,
                                                                                                           QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  StockDetailActivity.class);
-                                                                              detail.putExtra("symbol", mCursorAdapter.getSymbol(position));
                                                                               Log.d("oonClick",
                                                                                     "Symbol to send to detail activity: " + mCursorAdapter.getSymbol(
                                                                                             position));
-                                                                              v.setContentDescription("Plot: " + mCursorAdapter.getSymbol(position));
-                                                                              startActivity(detail);
+                                                                              v.setContentDescription(
+                                                                                      "Plot: " + mCursorAdapter.getSymbol(
+                                                                                              position));
+                                                                              detailActivityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP );
+                                                                                startActivity(detailActivityIntent);
                                                                             }
                                                                           }));
     recyclerView.setAdapter(mCursorAdapter);
