@@ -1,4 +1,4 @@
-TODO widget Does not launch plot activity
+TODO switch intent service to service for fetch plot!
 
 TODO replace Toast with Snackbar
 
