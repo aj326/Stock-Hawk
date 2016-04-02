@@ -114,7 +114,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                               v.setContentDescription(
                                                                                       "Plot: " + mCursorAdapter.getSymbol(
                                                                                               position));
-                                                                              detailActivityIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP );
+//                                                                              detailActivityIntent.addFlags();
                                                                                 startActivity(detailActivityIntent);
                                                                             }
                                                                           }));

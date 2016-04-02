@@ -90,7 +90,7 @@ public class StockDetailWidgetRemoteViewService extends RemoteViewsService {
                 }
 
                 final Intent fillInIntent = new Intent();
-                fillInIntent.setData(QuoteProvider.Quotes.withSymbol(symbol));
+                fillInIntent.setData(QuoteProvider.History.withSymbol(symbol));
 //                fillInIntent.
                 Log.d(LOG_TAG,fillInIntent.toString());
                 views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);

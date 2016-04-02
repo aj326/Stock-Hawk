@@ -5,9 +5,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.sam_chordas.android.stockhawk.data.HistColumns;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
@@ -26,6 +26,7 @@ import java.util.Date;
  * Created by ahmed on 4/1/16.
  */
 public class FetchPlotDataService  extends IntentService{
+    public final static String BROADCAST_ACTION = "com.sam_chordas.android.stockhawk.app.BROADCAT_ACTION";
     private String LOG_TAG = FetchPlotDataService.class.getSimpleName();
     static  HttpUrl url = HttpUrl.parse("http://ichart.finance.yahoo.com/table.csv");
     private final OkHttpClient client = new OkHttpClient();
@@ -81,37 +82,33 @@ public class FetchPlotDataService  extends IntentService{
             Log.d(LOG_TAG, myUrl.toString());
 
             Request request = new Request.Builder().url(myUrl).build();
+        client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+            }
 
-
-            final Gson gson = new Gson();
-            client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
-                @Override
-                public void onFailure(Request request, IOException e) {
-                }
-
-                @Override
-                public void onResponse(Response response) throws IOException {
-                    ContentValues contentValues;
-
-
-                    BufferedReader reader = new BufferedReader(
-                            response.body().charStream()
-                    );
-                    Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
-                    for (CSVRecord record : records) {
+            @Override
+            public void onResponse(Response response) throws IOException {
+                ContentValues contentValues;
+                BufferedReader reader = new BufferedReader(
+                        response.body().charStream()
+                );
+                Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
+                for (CSVRecord record : records) {
 //                    ContentResolver.
-                        Log.d(LOG_TAG, (record.get("Date")));
-                        contentValues = new ContentValues();
-                        contentValues.put(HistColumns.SYMBOL, symbol);
-                        contentValues.put(HistColumns.DATE, record.get("Date"));
-                        contentValues.put(HistColumns.VALUE, record.get("Close"));
+                    Log.d(LOG_TAG, (record.get("Date")));
+                    contentValues = new ContentValues();
+                    contentValues.put(HistColumns.SYMBOL, symbol);
+                    contentValues.put(HistColumns.DATE, record.get("Date"));
+                    contentValues.put(HistColumns.VALUE, record.get("Close"));
 //                        TODO bulk insert
-                        mContext.getContentResolver().insert(
-                                uri, contentValues);
-                    }
+                    mContext.getContentResolver().insert(
+                            uri, contentValues);
                 }
-            });
-
+            }
+        });
+        Intent done = new Intent(BROADCAST_ACTION);
+        done.putExtra("symbol",uri.getLastPathSegment());
+        LocalBroadcastManager.getInstance(this).sendBroadcast(done);
         }
-
 }

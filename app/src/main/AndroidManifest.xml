@@ -54,8 +54,10 @@
 
             </intent-filter>
         </service>
-        <service android:name="com.sam_chordas.android.stockhawk.service.StockIntentService"/>
-        <service android:name=".service.FetchPlotDataService"/>
+        <service android:name="com.sam_chordas.android.stockhawk.service.StockIntentService"
+            android:exported="false"/>
+        <service android:name=".service.FetchPlotDataService"
+            android:exported="false"/>
 
         <provider
             android:name="com.sam_chordas.android.stockhawk.data.generated.QuoteProvider"
