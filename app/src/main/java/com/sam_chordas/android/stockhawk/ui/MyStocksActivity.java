@@ -16,7 +16,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -102,19 +101,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                             public void onItemClick(
                                                                                     View v,
                                                                                     int position) {
-                                                                              Toast.makeText(mContext,
-                                                                                             mCursorAdapter.getSymbol(position)+ " " + mCursorAdapter.getItemId(position)+ " "+ position,Toast.LENGTH_LONG).show();
-
                                                                               Intent detailActivityIntent = new Intent(
                                                                                       MAIN_TO_DETAIL,
                                                                                                           QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  StockDetailActivity.class);
-                                                                              Log.d("oonClick",
-                                                                                    "Symbol to send to detail activity: " + mCursorAdapter.getSymbol(
-                                                                                            position));
                                                                               v.setContentDescription(
                                                                                       "Plot: " + mCursorAdapter.getSymbol(
                                                                                               position));
-//                                                                              detailActivityIntent.addFlags();
                                                                                 startActivity(detailActivityIntent);
                                                                             }
                                                                           }));

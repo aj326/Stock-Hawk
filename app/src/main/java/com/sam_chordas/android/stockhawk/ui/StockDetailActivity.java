@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -65,7 +64,6 @@ public class StockDetailActivity extends AppCompatActivity
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if(savedInstanceState == null) {
             setContentView(R.layout.activity_detail);
             mChart = (LineChartView) findViewById(R.id.chart);
             isConnected = Utils.isConnected(mContext);
@@ -73,7 +71,6 @@ public class StockDetailActivity extends AppCompatActivity
             setTitle(mSymbol.toUpperCase());
             IntentFilter statusIntentFilter = new IntentFilter(
                     FetchPlotDataService.BROADCAST_ACTION);
-// Registers the MyResponseReceiver and its intent filters
             LocalBroadcastManager.getInstance(this).registerReceiver(
                     dateFetched, statusIntentFilter);
             if (isConnected) {
@@ -88,15 +85,11 @@ public class StockDetailActivity extends AppCompatActivity
             args.putString("symbol", mSymbol);
             getLoaderManager().restartLoader(CURSOR_LOADER_ID, args, this);
         }
-//    }
-//        else{
-//            mSymbol = savedInstanceState.getString("symbol");
             Bundle args = new Bundle();
             args.putString("symbol", mSymbol);
             setContentView(R.layout.activity_detail);
             mChart = (LineChartView) findViewById(R.id.chart);
             getLoaderManager().restartLoader(CURSOR_LOADER_ID, args, this);
-//        }
 }
 
 
@@ -114,7 +107,7 @@ public class StockDetailActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            DatabaseUtils.dumpCursor(data);
+//      dismiss chart since I don't have an adapter
         mChart.dismiss();
         Log.d(LOG_TAG, "finished loading");
         if(data!=null)
@@ -156,7 +149,6 @@ public class StockDetailActivity extends AppCompatActivity
                     .setXAxis(false)
                     .setAxisColor(ContextCompat.getColor(mContext, R.color.material_blue_700))
                     .setGrid(ChartView.GridType.FULL, paint)
-//                    .setLabelsFormat()
                     .setYAxis(false);
             mChart.show();
         }
@@ -174,11 +166,6 @@ public class StockDetailActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(dateFetched);
-    }
-
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putString("symbol",mSymbol);
-        super.onSaveInstanceState(outState);
     }
 }
 

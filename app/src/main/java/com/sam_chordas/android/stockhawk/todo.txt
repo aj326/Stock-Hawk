@@ -1,4 +1,4 @@
-TODO replace Toast with Snackbar
+TODO replace okhttp with retrofit for plotting
 
 TODO error handling for network stuff is basic at best
 
