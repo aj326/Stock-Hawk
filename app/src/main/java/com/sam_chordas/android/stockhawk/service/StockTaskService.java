@@ -55,6 +55,8 @@ import retrofit.Callback;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 
+import static com.sam_chordas.android.stockhawk.rest.Utils.updateWidgets;
+
 /**
  * Created by sam_chordas on 9/30/15.
  * The GCMTask service is primarily for periodic tasks. However, OnRunTask can be called directly
@@ -68,7 +70,6 @@ public class StockTaskService extends GcmTaskService {
     private StringBuilder mStoredSymbols = new StringBuilder();
     private boolean isUpdate, isInit, isAdd;
     private StringBuilder symbols;
-    public final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_UPDATED";
 
 
     final Retrofit retrofit = new Retrofit.Builder().baseUrl(
@@ -245,7 +246,7 @@ public class StockTaskService extends GcmTaskService {
                          }
                      }
         );
-        updateWidgets();
+        updateWidgets(mContext);
 //        return result[0];
     }
 
@@ -268,7 +269,6 @@ public class StockTaskService extends GcmTaskService {
             }
 
 
-
             @Override
             public void onResponse(
                     retrofit.Response<QueryMulti> response,
@@ -281,72 +281,66 @@ public class StockTaskService extends GcmTaskService {
                     int numOfQuotes = results.getQuote().size();
                     Log.d(LOG_TAG, numOfQuotes + "num of q");
                     ArrayList<ContentProviderOperation> contentProviderOperations = new ArrayList<ContentProviderOperation>();
-                    if(isInit)
-                    for (Quote quote : results.getQuote()) {
-                        contentProviderOperations.add(ContentProviderOperation.newInsert(
-                                QuoteProvider.Quotes.withSymbol(quote.getSymbol()))
-                                .withValue(QuoteColumns.SYMBOL, quote.getSymbol())
-                                                              .withValue(QuoteColumns.BIDPRICE,
-                                                                         Utils.truncateBidPrice(
-                                                                                 quote.getBid()))
-                                                              .withValue(
-                                                                      QuoteColumns.PERCENT_CHANGE,
-                                                                      Utils.truncateChange(
-                                                                              quote.getChangeinPercent(),
-                                                                              true))
-                                                              .withValue(QuoteColumns.ISUP,
-                                                                         quote.getChange().charAt(
-                                                                                 0) == '-' ? 0
-                                                                                           : 1).withValue(
-                                        QuoteColumns.CHANGE,
-                                        Utils.truncateChange(quote.getChange(),
-                                                             false)).withValue(
-                                        QuoteColumns.ISCURRENT, 1).build());
-
-                        Log.d("Initing", quote.getSymbol());
-                    }
+                    if (isInit)
+                        for (Quote quote : results.getQuote()) {
+                            contentProviderOperations.add(ContentProviderOperation.newInsert(
+                                    QuoteProvider.Quotes.withSymbol(quote.getSymbol()))
+                                                                  .withValue(QuoteColumns.SYMBOL,
+                                                                             quote.getSymbol())
+                                                                  .withValue(QuoteColumns.BIDPRICE,
+                                                                             Utils.truncateBidPrice(
+                                                                                     quote.getBid()))
+                                                                  .withValue(
+                                                                          QuoteColumns.PERCENT_CHANGE,
+                                                                          Utils.truncateChange(
+                                                                                  quote.getChangeinPercent(),
+                                                                                  true))
+                                                                  .withValue(QuoteColumns.ISUP,
+                                                                             quote.getChange().charAt(
+                                                                                     0) == '-' ? 0
+                                                                                               : 1).withValue(
+                                            QuoteColumns.CHANGE,
+                                            Utils.truncateChange(quote.getChange(),
+                                                                 false)).withValue(
+                                            QuoteColumns.ISCURRENT, 1).build());
+                            Log.d("Initing", quote.getSymbol());
+                        }
                     else
-                    for (Quote quote : results.getQuote()) {
-                        contentProviderOperations.add(ContentProviderOperation.newUpdate(
-                                QuoteProvider.Quotes.withSymbol(quote.getSymbol()))
+                        for (Quote quote : results.getQuote()) {
+                            contentProviderOperations.add(ContentProviderOperation.newUpdate(
+                                    QuoteProvider.Quotes.withSymbol(quote.getSymbol()))
 //                                .withValue(QuoteColumns.SYMBOL, quote.getSymbol())
-                                                              .withValue(QuoteColumns.BIDPRICE,
-                                                                         Utils.truncateBidPrice(
-                                                                                 quote.getBid()))
-                                                              .withValue(
-                                                                      QuoteColumns.PERCENT_CHANGE,
-                                                                      Utils.truncateChange(
-                                                                              quote.getChangeinPercent(),
-                                                                              true))
-                                                              .withValue(QuoteColumns.ISUP,
-                                                                         quote.getChange().charAt(
-                                                                                 0) == '-' ? 0
-                                                                                           : 1).withValue(
-                                        QuoteColumns.CHANGE,
-                                        Utils.truncateChange(quote.getChange(),
-                                                             false)).withValue(
-                                        QuoteColumns.ISCURRENT, 1).build());
-
-                        Log.d("Updating", quote.getSymbol());
-                    }
+                                                                  .withValue(QuoteColumns.BIDPRICE,
+                                                                             Utils.truncateBidPrice(
+                                                                                     quote.getBid()))
+                                                                  .withValue(
+                                                                          QuoteColumns.PERCENT_CHANGE,
+                                                                          Utils.truncateChange(
+                                                                                  quote.getChangeinPercent(),
+                                                                                  true))
+                                                                  .withValue(QuoteColumns.ISUP,
+                                                                             quote.getChange().charAt(
+                                                                                     0) == '-' ? 0
+                                                                                               : 1).withValue(
+                                            QuoteColumns.CHANGE,
+                                            Utils.truncateChange(quote.getChange(),
+                                                                 false)).withValue(
+                                            QuoteColumns.ISCURRENT, 1).build());
+                            Log.d("Updating", quote.getSymbol());
+                        }
                     try {
-                        mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,contentProviderOperations);
+                        mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
+                                                                 contentProviderOperations);
                     } catch (RemoteException | OperationApplicationException e) {
                         e.printStackTrace();
                     }
                 }
-            updateWidgets();
+                updateWidgets(mContext);
             }
         });
     }
 
-    private void updateWidgets() {
-        Context context = mContext;
-        // Setting the package ensures that only components in our app will receive the broadcast
-        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
-                .setPackage(context.getPackageName());
-        context.sendBroadcast(dataUpdatedIntent);
-    }
+
 
     @Override
     public int onRunTask(TaskParams params) {

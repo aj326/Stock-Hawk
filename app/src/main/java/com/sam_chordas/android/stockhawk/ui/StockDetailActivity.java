@@ -140,7 +140,6 @@ public class StockDetailActivity extends AppCompatActivity
             Paint paint = new Paint();
             paint.setColor(ContextCompat.getColor(mContext, R.color.md_divider_black));
             mChart.setBorderSpacing(Tools.fromDpToPx(5))
-//                    .
                     .setAxisBorderValues(Math.round(min) - 1, Math.round(max) + 1)
                     .setYLabels(AxisController.LabelPosition.OUTSIDE)
                     .setLabelsColor(

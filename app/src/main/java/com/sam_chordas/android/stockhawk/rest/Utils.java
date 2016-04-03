@@ -3,6 +3,7 @@ package com.sam_chordas.android.stockhawk.rest;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 public class Utils {
 
   private static String LOG_TAG = Utils.class.getSimpleName();
+  public static final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_UPDATED";
+
 
   public static boolean showPercent = true;
 
@@ -42,6 +45,13 @@ public class Utils {
     NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
     return activeNetwork != null &&
                   activeNetwork.isConnectedOrConnecting();
+  }
+  public static void updateWidgets(Context context) {
+//        Context context = mContext;
+    // Setting the package ensures that only components in our app will receive the broadcast
+    Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+            .setPackage(context.getPackageName());
+    context.sendBroadcast(dataUpdatedIntent);
   }
 
 //  @Retention(RetentionPolicy.SOURCE)

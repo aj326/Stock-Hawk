@@ -10,7 +10,7 @@
   <dimen name="widget_default_height">110dp</dimen>
   <dimen name="widget_default_width">110dp</dimen>
 
-
+<dimen name="axis_title_from_chart_margin">12dp</dimen>
     <dimen name="button_size">40dp</dimen>
     <dimen name="color_button_size">35dp</dimen>
 

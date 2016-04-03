@@ -38,6 +38,8 @@ import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
+import static com.sam_chordas.android.stockhawk.rest.Utils.updateWidgets;
+
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
 
@@ -223,6 +225,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
       // this is for changing stock changes from percent value to dollar value
       Utils.showPercent = !Utils.showPercent;
       this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+      updateWidgets(mContext);
     }
 
     return super.onOptionsItemSelected(item);
@@ -256,6 +259,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   }
 //  http://stackoverflow.com/questions/12997463/send-intent-from-service-to-activity
 
+//  TODO remove Utils.errorToast
   private BroadcastReceiver bReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
