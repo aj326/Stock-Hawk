@@ -35,9 +35,9 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 /**
  * Created by ahmed on 3/12/16.
  */
-public class StockDetailActivity extends AppCompatActivity
+public class ChartActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
-    private final String LOG_TAG = StockDetailActivity.class.getSimpleName();
+    private final String LOG_TAG = ChartActivity.class.getSimpleName();
 
     private LineChartView mChart;
     private final int CURSOR_LOADER_ID = 0;
@@ -56,7 +56,7 @@ public class StockDetailActivity extends AppCompatActivity
             Log.d(LOG_TAG,"received!");
             Bundle args = new Bundle();
             args.putString("symbol", mSymbol);
-            getLoaderManager().restartLoader(CURSOR_LOADER_ID, args, StockDetailActivity.this);
+            getLoaderManager().restartLoader(CURSOR_LOADER_ID, args, ChartActivity.this);
         }
 
     };
@@ -64,7 +64,7 @@ public class StockDetailActivity extends AppCompatActivity
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_detail);
+            setContentView(R.layout.activity_chart);
             mChart = (LineChartView) findViewById(R.id.chart);
             isConnected = Utils.isConnected(mContext);
             mSymbol = getIntent().getData().getLastPathSegment();
@@ -87,7 +87,7 @@ public class StockDetailActivity extends AppCompatActivity
         }
             Bundle args = new Bundle();
             args.putString("symbol", mSymbol);
-            setContentView(R.layout.activity_detail);
+            setContentView(R.layout.activity_chart);
             mChart = (LineChartView) findViewById(R.id.chart);
             getLoaderManager().restartLoader(CURSOR_LOADER_ID, args, this);
 }

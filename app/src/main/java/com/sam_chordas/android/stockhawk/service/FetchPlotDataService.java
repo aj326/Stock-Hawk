@@ -51,7 +51,7 @@ public class FetchPlotDataService  extends IntentService{
     protected void onHandleIntent(Intent intent) {
         Uri uri = intent.getData();
         fetchPoints(uri);
-//        sendBroadcast(new Intent(this, StockDetailActivity.class));
+//        sendBroadcast(new Intent(this, ChartActivity.class));
     }
 
     private void fetchPoints(final Uri uri) {

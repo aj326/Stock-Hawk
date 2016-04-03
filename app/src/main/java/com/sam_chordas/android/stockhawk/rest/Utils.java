@@ -66,8 +66,8 @@ public class Utils {
 
   public static ArrayList quoteJsonToContentVals(String JSON, boolean isUpdate){
     ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
-    JSONObject jsonObject = null;
-    JSONArray resultsArray = null;
+    JSONObject jsonObject;
+    JSONArray resultsArray;
     Log.i(LOG_TAG, "GET FB: " +JSON);
     try{
       jsonObject = new JSONObject(JSON);
@@ -117,7 +117,7 @@ public class Utils {
     change = change.substring(1, change.length());
     double round = (double) Math.round(Double.parseDouble(change) * 100) / 100;
     change = String.format("%.2f", round);
-    StringBuffer changeBuffer = new StringBuffer(change);
+    StringBuilder changeBuffer = new StringBuilder(change);
     changeBuffer.insert(0, weight);
     changeBuffer.append(ampersand);
     change = changeBuffer.toString();

@@ -40,7 +40,7 @@ import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallb
 
 import static com.sam_chordas.android.stockhawk.rest.Utils.updateWidgets;
 
-public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
+public class StocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
 
   /**
@@ -74,7 +74,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                       .build());
     mContext = this;
     isConnected = Utils.isConnected(mContext);
-    setContentView(R.layout.activity_my_stocks);
+    setContentView(R.layout.activity_stocks);
 
     LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
     IntentFilter intentFilter = new IntentFilter();
@@ -105,7 +105,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                                                                     int position) {
                                                                               Intent detailActivityIntent = new Intent(
                                                                                       MAIN_TO_DETAIL,
-                                                                                                          QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  StockDetailActivity.class);
+                                                                                                          QuoteProvider.History.withSymbol( mCursorAdapter.getSymbol(position)),mContext,  ChartActivity.class);
                                                                               v.setContentDescription(
                                                                                       "Plot: " + mCursorAdapter.getSymbol(
                                                                                               position));
@@ -132,7 +132,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                       new String[] { QuoteColumns.SYMBOL }, QuoteColumns.SYMBOL + "= ?",
                       new String[] { input.toString() }, null);
                   if (c.getCount() != 0) {
-                    Utils.errorToast(MyStocksActivity.this,"This stock is already saved!");
+                    Utils.errorToast(StocksActivity.this,"This stock is already saved!");
                     return;
                   } else {
                     // Add the stock to DB
@@ -264,7 +264,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     public void onReceive(Context context, Intent intent) {
       if(intent.getAction().equals(INVALID)) {
-        Utils.errorToast(MyStocksActivity.this,getString(R.string.stock_dne));
+        Utils.errorToast(StocksActivity.this,getString(R.string.stock_dne));
       }
     }
   };

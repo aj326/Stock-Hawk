@@ -14,14 +14,14 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
-import com.sam_chordas.android.stockhawk.ui.StockDetailActivity;
+import com.sam_chordas.android.stockhawk.ui.ChartActivity;
+import com.sam_chordas.android.stockhawk.ui.StocksActivity;
 
 /**
  * Created by ahmed on 3/30/16.
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class QuoteWidgetProvider extends AppWidgetProvider {
+public class StockWidgetProvider extends AppWidgetProvider {
     public final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.app.ACTION_DATA_UPDATED";
 
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -30,7 +30,7 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_collection);
 
             // Create an Intent to launch MainActivity
-            Intent intent = new Intent(context, MyStocksActivity.class);
+            Intent intent = new Intent(context, StocksActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
             views.setOnClickPendingIntent(R.id.widget, pendingIntent);
 
@@ -40,8 +40,8 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
             } else {
                 setRemoteAdapterV11(context, views);
             }
-            Intent clickIntentTemplate =new Intent(context, StockDetailActivity.class);
-            clickIntentTemplate.setAction(MyStocksActivity.MAIN_TO_DETAIL);
+            Intent clickIntentTemplate =new Intent(context, ChartActivity.class);
+            clickIntentTemplate.setAction(StocksActivity.MAIN_TO_DETAIL);
             PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
                     .addNextIntentWithParentStack(clickIntentTemplate)
                     .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -78,7 +78,7 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
     private void setRemoteAdapter(Context context, @NonNull final RemoteViews views) {
 //        intent.putExtra()
         views.setRemoteAdapter(R.id.widget_list,
-                               new Intent(context, StockDetailWidgetRemoteViewService.class));
+                               new Intent(context, ChartWidgetRemoteViewService.class));
     }
 
     /**
@@ -89,7 +89,7 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
     @SuppressWarnings("deprecation")
     private void setRemoteAdapterV11(Context context, @NonNull final RemoteViews views) {
         views.setRemoteAdapter(0, R.id.widget_list,
-                               new Intent(context, StockDetailWidgetRemoteViewService.class));
+                               new Intent(context, ChartWidgetRemoteViewService.class));
     }
 }
 

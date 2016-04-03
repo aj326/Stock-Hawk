@@ -18,8 +18,8 @@ import com.sam_chordas.android.stockhawk.rest.Utils;
  * Created by ahmed on 3/30/16.
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-public class StockDetailWidgetRemoteViewService extends RemoteViewsService {
-    public final String LOG_TAG = StockDetailWidgetRemoteViewService.class.getSimpleName();
+public class ChartWidgetRemoteViewService extends RemoteViewsService {
+    public final String LOG_TAG = ChartWidgetRemoteViewService.class.getSimpleName();
 
 
     @Override

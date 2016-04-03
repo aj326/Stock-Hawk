@@ -21,10 +21,12 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/value"
-            android:text="Value"
+            android:text="@string/chart_value_title"
             android:textColor="@color/material_blue_500"
             android:textAlignment="center"
             android:layout_marginRight="@dimen/axis_title_from_chart_margin"
+            android:layout_marginEnd="@dimen/axis_title_from_chart_margin"
+            android:layout_gravity="center"
             android:textIsSelectable="false"
             android:gravity="bottom"/>
         <com.db.chart.view.LineChartView
@@ -39,11 +41,10 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Date"
+        android:text="@string/chart_date_title"
         android:textColor="@color/material_blue_500"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/chart"
         android:textAlignment="center"
+        android:layout_gravity="center"
         android:layout_weight="16"
         />
 

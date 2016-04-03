@@ -18,6 +18,8 @@
   <string name="monthly">Monthly</string>
   <string name="chart">chart</string>
   <string name="fab">Add new Stock</string>
+  <string name="chart_value_title">Value</string>
+  <string name="chart_date_title">Date</string>
 
 
 </resources>

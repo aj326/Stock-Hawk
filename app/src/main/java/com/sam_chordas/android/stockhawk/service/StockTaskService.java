@@ -15,7 +15,6 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sam_chordas.android.stockhawk.data.HistColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
@@ -29,8 +28,8 @@ import com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.QuerySingular
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.retrofit.QuoteFetchService;
 import com.sam_chordas.android.stockhawk.retrofit.QuotesFetchService;
-import com.sam_chordas.android.stockhawk.ui.MyStocksActivity;
-import com.sam_chordas.android.stockhawk.ui.StockDetailActivity;
+import com.sam_chordas.android.stockhawk.ui.ChartActivity;
+import com.sam_chordas.android.stockhawk.ui.StocksActivity;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -114,8 +113,6 @@ public class StockTaskService extends GcmTaskService {
 
         Request request = new Request.Builder().url(myUrl).build();
 
-
-        final Gson gson = new Gson();
         client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
@@ -130,8 +127,8 @@ public class StockTaskService extends GcmTaskService {
                                 response.body().charStream()
                         );
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
-                ArrayList<String> dates = new ArrayList<String>();
-                ArrayList<String> values = new ArrayList<String>();
+                ArrayList<String> dates = new ArrayList<>();
+                ArrayList<String> values = new ArrayList<>();
                 for (CSVRecord record : records) {
 //                    ContentResolver.
                     Log.d(LOG_TAG, (record.get("Date")));
@@ -144,8 +141,8 @@ public class StockTaskService extends GcmTaskService {
                     dates.add(record.get("Date"));
                     values.add(record.get("Close"));
                 }
-                Intent intent = new Intent(StockDetailActivity.ACTION_DATA_PLOT_POINTS_GATHERED,QuoteProvider.History.withSymbol(symbol),mContext,
-                                           StockDetailActivity.class);
+                Intent intent = new Intent(ChartActivity.ACTION_DATA_PLOT_POINTS_GATHERED,QuoteProvider.History.withSymbol(symbol),mContext,
+                                           ChartActivity.class);
                 intent.putExtra("symbol", symbol);
                 Log.d(LOG_TAG,"sending intent with action, symbol in extra, and uri with symbol");
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(
@@ -212,7 +209,7 @@ public class StockTaskService extends GcmTaskService {
                                  Log.d(LOG_TAG, "insert" + quote.getSymbol());
                                  if (quote.getAsk() == null) {
                                      Log.d(LOG_TAG, "Stock DNE");
-                                     Intent RTReturn = new Intent(MyStocksActivity.INVALID);
+                                     Intent RTReturn = new Intent(StocksActivity.INVALID);
                                      LocalBroadcastManager.getInstance(mContext).sendBroadcast(
                                              RTReturn);
                                      return;
@@ -280,7 +277,7 @@ public class StockTaskService extends GcmTaskService {
                     Results results = query.getResults();
                     int numOfQuotes = results.getQuote().size();
                     Log.d(LOG_TAG, numOfQuotes + "num of q");
-                    ArrayList<ContentProviderOperation> contentProviderOperations = new ArrayList<ContentProviderOperation>();
+                    ArrayList<ContentProviderOperation> contentProviderOperations = new ArrayList<>();
                     if (isInit)
                         for (Quote quote : results.getQuote()) {
                             contentProviderOperations.add(ContentProviderOperation.newInsert(
@@ -397,10 +394,9 @@ public class StockTaskService extends GcmTaskService {
                 DatabaseUtils.dumpCursor(initQueryCursor);
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
-                    mStoredSymbols.append("\"" +
-                                          initQueryCursor.getString(
-                                                  initQueryCursor.getColumnIndex(
-                                                          "symbol")) + "\",");
+                    mStoredSymbols.append("\"").append(initQueryCursor.getString(
+                            initQueryCursor.getColumnIndex(
+                                    "symbol"))).append("\",");
                     initQueryCursor.moveToNext();
                 }
                 mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
