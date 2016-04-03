@@ -132,18 +132,19 @@ public class StocksActivity extends AppCompatActivity implements LoaderManager.L
                       new String[] { QuoteColumns.SYMBOL }, QuoteColumns.SYMBOL + "= ?",
                       new String[] { input.toString() }, null);
                   if (c.getCount() != 0) {
-                    Utils.errorToast(StocksActivity.this,"This stock is already saved!");
+                    Utils.errorToast(StocksActivity.this, "This stock is already saved!");
                     return;
                   } else {
                     // Add the stock to DB
                     mServiceIntent.putExtra("tag", "add");
                     mServiceIntent.putExtra("symbol", input.toString());
-//                    bindService(mServiceIntent,)
                     startService(mServiceIntent);
                   }
+                  c.close();
                 }
               })
               .show();
+
         } else {
           networkToast();
         }
