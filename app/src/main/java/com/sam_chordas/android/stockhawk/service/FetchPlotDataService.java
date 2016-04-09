@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -71,15 +72,15 @@ public class FetchPlotDataService  extends IntentService{
 //        g 	d for day, m for month, y for yearly
                     .addQueryParameter("s", symbol)
                     .addQueryParameter("a", String.valueOf(dt.getMonthOfYear()))
-                    .addQueryParameter("b", String.valueOf(dt.getDayOfMonth()))
+                    .addQueryParameter("b", "1")
                     .addQueryParameter("c", String.valueOf(dt.getYear() - 1))
-//                .addQueryParameter("d", String.valueOf(dt.getMonthOfYear()))
+                    .addQueryParameter("d", String.valueOf(dt.getMonthOfYear()-1))
 //                .addQueryParameter("e", String.valueOf(dt.getDayOfMonth()))
 //                .addQueryParameter("f",String.valueOf(dt.getYear()))
                     .addQueryParameter("g", "m")
                     .addQueryParameter("ignore", ".csv")
                     .build();
-            Log.d(LOG_TAG, myUrl.toString());
+            Log.d(LOG_TAG, "URL: " +myUrl.toString());
 
             Request request = new Request.Builder().url(myUrl).build();
         client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
@@ -93,18 +94,41 @@ public class FetchPlotDataService  extends IntentService{
                 BufferedReader reader = new BufferedReader(
                         response.body().charStream()
                 );
+                String[] DATES = {HistColumns.DATE_0,HistColumns.DATE_1,HistColumns.DATE_2
+                ,HistColumns.DATE_3,HistColumns.DATE_4,HistColumns.DATE_5,HistColumns.DATE_6,
+                                  HistColumns.DATE_7,HistColumns.DATE_8,HistColumns.DATE_9,
+                                  HistColumns.DATE_10,HistColumns.DATE_11};
+                String[] VALUES = {HistColumns.VALUE_0,HistColumns.VALUE_1,HistColumns.VALUE_2
+                        ,HistColumns.VALUE_3,HistColumns.VALUE_4,HistColumns.VALUE_5,HistColumns.VALUE_6,
+                                  HistColumns.VALUE_7,HistColumns.VALUE_8,HistColumns.VALUE_9,
+                                  HistColumns.VALUE_10,HistColumns.VALUE_11};
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
-                for (CSVRecord record : records) {
-//                    ContentResolver.
+                int i = (DATES.length)-1;
+                contentValues = new ContentValues();
+                for(CSVRecord record: records){
                     Log.d(LOG_TAG, (record.get("Date")));
-                    contentValues = new ContentValues();
                     contentValues.put(HistColumns.SYMBOL, symbol);
-                    contentValues.put(HistColumns.DATE, record.get("Date"));
-                    contentValues.put(HistColumns.VALUE, record.get("Close"));
-//                        TODO bulk insert
-                    mContext.getContentResolver().insert(
-                            uri, contentValues);
+                    contentValues.put(DATES[i], record.get("Date"));
+                    contentValues.put(VALUES[i], record.get("Close"));
+                    i--;
                 }
+                Log.d(LOG_TAG,"DUMP"+ contentValues.toString());
+
+                mContext.getContentResolver().insert(
+                        uri, contentValues);
+                Log.d(LOG_TAG,"DUMP"+ contentValues.toString());
+                DatabaseUtils.dumpCursor(mContext.getContentResolver().query(uri,null,null,null,null));
+//                for (CSVRecord record : records) {
+////                    ContentResolver.
+//                    Log.d(LOG_TAG, (record.get("Date")));
+//                    contentValues = new ContentValues();
+//                    contentValues.put(HistColumns.SYMBOL, symbol);
+//                    contentValues.put(HistColumns.DATE, record.get("Date"));
+//                    contentValues.put(HistColumns.VALUE, record.get("Close"));
+////                        TODO bulk insert
+//                    mContext.getContentResolver().insert(
+//                            uri, contentValues);
+//                }
             }
         });
         Intent done = new Intent(BROADCAST_ACTION);

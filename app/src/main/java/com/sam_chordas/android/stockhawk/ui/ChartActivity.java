@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -100,8 +101,8 @@ public class ChartActivity extends AppCompatActivity
         return new CursorLoader(this,
                                 QuoteProvider.History.withSymbol(args.getString("symbol")),
                                 null,
-                                HistColumns.SYMBOL + " = ?",
-                                new String[]{args.getString("symbol","ERROR")},
+                               null,
+                               null,
                                 null);
     }
 
@@ -111,10 +112,43 @@ public class ChartActivity extends AppCompatActivity
         mChart.dismiss();
         Log.d(LOG_TAG, "finished loading");
         if(data!=null)
-        if (data.moveToLast()) {
+        if (data.moveToFirst()) {
+
+            DatabaseUtils.dumpCursor(data);
+//            Log.d(LOG_TAG,)
+            int[] datesColumnIds
+                    =
+                    {
+                            data.getColumnIndex(HistColumns.DATE_0),
+                            data.getColumnIndex(HistColumns.DATE_1),
+                            data.getColumnIndex(HistColumns.DATE_2),
+                            data.getColumnIndex(HistColumns.DATE_3),
+                            data.getColumnIndex(HistColumns.DATE_4),
+                            data.getColumnIndex(HistColumns.DATE_5),
+                            data.getColumnIndex(HistColumns.DATE_6),
+                            data.getColumnIndex(HistColumns.DATE_7),
+                            data.getColumnIndex(HistColumns.DATE_8),
+                            data.getColumnIndex(HistColumns.DATE_9),
+                            data.getColumnIndex(HistColumns.DATE_10),
+                            data.getColumnIndex(HistColumns.DATE_11),
+                            };
+            int[] valuesColumnIds
+                    =
+                    {
+                            data.getColumnIndex(HistColumns.VALUE_0),
+                            data.getColumnIndex(HistColumns.VALUE_1),
+                            data.getColumnIndex(HistColumns.VALUE_2),
+                            data.getColumnIndex(HistColumns.VALUE_3),
+                            data.getColumnIndex(HistColumns.VALUE_4),
+                            data.getColumnIndex(HistColumns.VALUE_5),
+                            data.getColumnIndex(HistColumns.VALUE_6),
+                            data.getColumnIndex(HistColumns.VALUE_7),
+                            data.getColumnIndex(HistColumns.VALUE_8),
+                            data.getColumnIndex(HistColumns.VALUE_9),
+                            data.getColumnIndex(HistColumns.VALUE_10),
+                            data.getColumnIndex(HistColumns.VALUE_11),
+                            };
             final LineSet lineSet = new LineSet();
-            final int rowDateId = data.getColumnIndex(HistColumns.DATE);
-            final int rowValueId = data.getColumnIndex(HistColumns.VALUE);
             float min, max, val;
             min = Float.MAX_VALUE;
             max = Float.MIN_VALUE;
@@ -123,16 +157,15 @@ public class ChartActivity extends AppCompatActivity
                     .appendLiteral('-')
                     .appendTwoDigitYear(2000)
                     .toFormatter();
-            do {
-                DateTime dt = new DateTime(data.getString(rowDateId));
+            for(int i = 0;i<datesColumnIds.length;i++) {
+                DateTime dt = new DateTime(data.getString(datesColumnIds[i]));
                 Log.d(LOG_TAG, "formatted date " + dt.toString(fmt));
-                val = data.getFloat(rowValueId);
+                val = data.getFloat(valuesColumnIds[i]);
                 lineSet.addPoint(dt.toString(fmt),
                                  val);
                 min = Math.min(min, val);
                 max = Math.max(max, val);
             }
-            while (data.moveToPrevious());
             lineSet.setColor(ContextCompat.getColor(mContext, R.color.material_blue_700))
                     .setDotsColor(ContextCompat.getColor(mContext, R.color.material_blue_900))
                     .setThickness(4);

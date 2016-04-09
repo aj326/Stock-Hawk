@@ -66,6 +66,7 @@ public class StocksActivity extends AppCompatActivity implements LoaderManager.L
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+//    mContext.deleteDatabase(QuoteDatabase.FILE_NAME);
     super.onCreate(savedInstanceState);
       Stetho.initialize(
               Stetho.newInitializerBuilder(this)

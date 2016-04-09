@@ -17,7 +17,7 @@ public class QuoteProvider {
 
   interface Path{
     String QUOTES = "quotes";
-      String HISTORY = "history";
+      String HISTORY = "history_upgraded";
   }
 
   private static Uri buildUri(String... paths){
@@ -51,14 +51,14 @@ public class QuoteProvider {
     public static class History{
         @ContentUri(
                 path = Path.HISTORY,
-                type = "vnd.android.cursor.dir/history"
+                type = "vnd.android.cursor.dir/history_upgraded"
         )
         public static final Uri CONTENT_URI = buildUri(Path.HISTORY);
 
         @InexactContentUri(
                 name = "HISTORY_ID",
                 path = Path.HISTORY + "/*",
-                type = "vnd.android.cursor.item/history",
+                type = "vnd.android.cursor.item/history_upgraded",
                 whereColumn = HistColumns.SYMBOL,
                 pathSegment = 1
         )

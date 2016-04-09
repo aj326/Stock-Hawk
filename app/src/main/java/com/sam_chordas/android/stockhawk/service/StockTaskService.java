@@ -16,7 +16,6 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.google.gson.GsonBuilder;
-import com.sam_chordas.android.stockhawk.data.HistColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.QueryMulti;
@@ -28,24 +27,14 @@ import com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.QuerySingular
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.retrofit.QuoteFetchService;
 import com.sam_chordas.android.stockhawk.retrofit.QuotesFetchService;
-import com.sam_chordas.android.stockhawk.ui.ChartActivity;
 import com.sam_chordas.android.stockhawk.ui.StocksActivity;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.joda.time.DateTime;
-
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,107 +73,6 @@ public class StockTaskService extends GcmTaskService {
 
     public StockTaskService(Context context) {
         mContext = context;
-    }
-
-    private void plotStock(final String symbol) throws GSMFail {
-//        if()
-        DateTime dt = new DateTime(new Date());
-
-        HttpUrl myUrl = url.newBuilder()
-//        s 	Ticker symbol (YHOO in the example)
-//        a     The "from month"
-//        b 	The "from day"
-//        c 	The "from year"
-//        d 	The "to month"
-//        e 	The "to day"
-//        f 	The "to year"
-//        g 	d for day, m for month, y for yearly
-                .addQueryParameter("s", symbol)
-                .addQueryParameter("a", String.valueOf(dt.getMonthOfYear()))
-                .addQueryParameter("b", String.valueOf(dt.getDayOfMonth()))
-                .addQueryParameter("c", String.valueOf(dt.getYear() - 1))
-//                .addQueryParameter("d", String.valueOf(dt.getMonthOfYear()))
-//                .addQueryParameter("e", String.valueOf(dt.getDayOfMonth()))
-//                .addQueryParameter("f",String.valueOf(dt.getYear()))
-                .addQueryParameter("g", "m")
-                .addQueryParameter("ignore", ".csv")
-                .build();
-        Log.d(LOG_TAG,myUrl.toString());
-
-        Request request = new Request.Builder().url(myUrl).build();
-
-        client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
-            @Override
-            public void onFailure(Request request, IOException e) {
-            }
-
-            @Override
-            public void onResponse(Response response) throws IOException {
-                ContentValues contentValues;
-
-
-                BufferedReader reader = new BufferedReader(
-                                response.body().charStream()
-                        );
-                Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(reader);
-                ArrayList<String> dates = new ArrayList<>();
-                ArrayList<String> values = new ArrayList<>();
-                for (CSVRecord record : records) {
-//                    ContentResolver.
-                    Log.d(LOG_TAG, (record.get("Date")));
-                    contentValues = new ContentValues();
-                    contentValues.put(HistColumns.SYMBOL, symbol);
-                    contentValues.put(HistColumns.DATE,record.get("Date"));
-                    contentValues.put(HistColumns.VALUE,record.get("Close"));
-                    mContext.getContentResolver().insert(QuoteProvider.History.withSymbol(symbol),contentValues);
-
-                    dates.add(record.get("Date"));
-                    values.add(record.get("Close"));
-                }
-                Intent intent = new Intent(ChartActivity.ACTION_DATA_PLOT_POINTS_GATHERED,QuoteProvider.History.withSymbol(symbol),mContext,
-                                           ChartActivity.class);
-                intent.putExtra("symbol", symbol);
-                Log.d(LOG_TAG,"sending intent with action, symbol in extra, and uri with symbol");
-                LocalBroadcastManager.getInstance(mContext).sendBroadcast(
-                        intent);
-
-
-            }
-        });
-//        options.put("format", "json");
-//        options.put("env", "store://datatables.org/alltableswithkeys");
-//        StockHisService stockHisService = retrofit.create(StockHisService.class);
-//        String s = urlString.replace("%3D", "=");
-//        Log.d(LOG_TAG,"Grabbing Historical Stock info "+ s);
-//        Call<StockHistory> call = stockHisService.queryDetails(s, options);
-//
-//        call.enqueue(
-//                new Callback<StockHistory>() {
-//                    @Override
-//                    public void onResponse(
-//                            retrofit.Response<StockHistory> response,
-//                            Retrofit retrofit) {
-//                        StockHistory stock = response.body();
-//                        if(stock!=null)
-//                        {
-//                            Parcelable wrapped = Parcels.wrap(stock.getQuery().getResults().getQuote());
-//                            Intent intent = new Intent("com.sam_chordas.android.stockhawk.app.ACTION_PLOT");
-//                            intent.putExtra("data",wrapped);
-//                            LocalBroadcastManager.getInstance(mContext).sendBroadcast(
-//                                    intent);
-//
-//
-//                        }
-//
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Throwable t) {
-//                    }
-//                });
-
-
-
     }
 //    TODO clean up, refactor
     private void insertData(String url) throws GSMFail{
@@ -349,18 +237,7 @@ public class StockTaskService extends GcmTaskService {
         String urlString;
         symbols = new StringBuilder();
         StringBuilder urlStringBuilder = new StringBuilder();
-        if(params.getTag().equals("chart")){
 
-
-            try {
-                plotStock(
-                        params.getExtras().getString("symbol"));
-
-            } catch (GSMFail gsmFail) {
-                return GcmNetworkManager.RESULT_FAILURE;
-
-        }}
-        else
         try {
 
             // Base URL for the Yahoo query
