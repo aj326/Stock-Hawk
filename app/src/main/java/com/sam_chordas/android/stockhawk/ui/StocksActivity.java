@@ -85,10 +85,10 @@ public class StocksActivity extends AppCompatActivity
         bManager.registerReceiver(bReceiver, intentFilter);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
-        mServiceIntent = new Intent(this, StockIntentService.class);
         if (savedInstanceState == null) {
             // Run the initialize task service so that some stocks appear upon an empty database
             if (isConnected) {
+                mServiceIntent = new Intent(this, StockIntentService.class);
                 isInit = true;
                 mServiceIntent.putExtra("tag", "init");
                 startService(mServiceIntent);
@@ -190,6 +190,12 @@ public class StocksActivity extends AppCompatActivity
         }
 
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
