@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
@@ -45,6 +48,12 @@ public class Utils {
     NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
     return activeNetwork != null &&
                   activeNetwork.isConnectedOrConnecting();
+  }
+  @SuppressWarnings("ResourceType")
+  static public @QuoteErrorHandling
+  int getQuoteStatus(Context c){
+    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+    return sp.getInt(c.getString(R.string.pref_quote_status_key), QuoteErrorHandling.QUOTE_STATUS_UNKNOWN);
   }
   public static void updateWidgets(Context context) {
 //        Context context = mContext;

@@ -11,15 +11,20 @@
   <string name="input_prefill"></string>
   <string name="widget_title">Today\'s Market</string>
   <string name="network_toast">Uh-oh! This app requires an internet connection</string>
-  <string name="empty_stock_list">Offline</string>
-  <string name="empty_stock_list_out_of_date">Offline: Stocks out of date</string>
-  <string name="empty_stock_list_no_stocks">Offline: No stocks to show</string>
+  <string name="empty_stock_list">No Info available :(</string>
+  <string name="empty_stock_list_no_network">No Info available :( The network is not available to fetch stock data.</string>
+  <string name="empty_stock_list_server_down">No Info available :( The server is not returning data.</string>
+  <string name="empty_stock_list_server_error">No Info available :( The server is not returning valid data. Please check for an updated version of Stock Hawk.</string>
+  <string name="empty_stock_list_no_stocks">No Info available :( No stocks to show</string>
+  <!-- Empty Weather Database -->
+  <string name="empty_forecast_list_invalid_location">No weather information available. The location in settings is not recognized by the weather server.</string>
   <string name="stock_dne">Stock DNE</string>
   <string name="monthly">Monthly</string>
   <string name="chart">chart</string>
   <string name="fab">Add new Stock</string>
   <string name="chart_value_title">Value</string>
   <string name="chart_date_title">Date</string>
-
+  <string name="pref_quote_status_key">pref_quote_status_key</string>
+  <string name="pref_plot_status_key">pref_plot_status_key</string>
 
 </resources>

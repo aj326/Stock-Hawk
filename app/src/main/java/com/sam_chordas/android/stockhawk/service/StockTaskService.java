@@ -5,10 +5,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -16,6 +18,8 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.QueryMulti;
@@ -24,6 +28,7 @@ import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.Quote;
 import com.sam_chordas.android.stockhawk.json_pojo.multi_stocks.Results;
 import com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Query;
 import com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.QuerySingular;
+import com.sam_chordas.android.stockhawk.rest.QuoteErrorHandling;
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.retrofit.QuoteFetchService;
 import com.sam_chordas.android.stockhawk.retrofit.QuotesFetchService;
@@ -31,6 +36,7 @@ import com.sam_chordas.android.stockhawk.ui.StocksActivity;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -75,7 +81,7 @@ public class StockTaskService extends GcmTaskService {
         mContext = context;
     }
 //    TODO clean up, refactor
-    private void insertData(String url) throws GSMFail{
+    private void insertData(String url){
         final Map<String, String> options = new HashMap<>();
         options.put("format", "json");
         options.put("env", "store://datatables.org/alltableswithkeys");
@@ -83,7 +89,6 @@ public class StockTaskService extends GcmTaskService {
         Call<QuerySingular> call = quoteFetchService.queryList(url, options);
         Log.d(LOG_TAG, "INSERTING data");
         call.enqueue(new Callback<QuerySingular>() {
-
                          @Override
                          public void onResponse(
                                  retrofit.Response<QuerySingular> response,
@@ -92,9 +97,16 @@ public class StockTaskService extends GcmTaskService {
                              if (queries != null) {
                                  Query query = queries.getQuery();
                                  Log.d(LOG_TAG, "INSERT: date: " + query.getCreated());
+                                 com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Quote quote;
                                  com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Results results = query.getResults();
-                                 com.sam_chordas.android.stockhawk.json_pojo.singular_stocks.Quote quote = results.getQuote();
-                                 Log.d(LOG_TAG, "insert" + quote.getSymbol());
+                                 try {
+                                     quote = results.getQuote();
+                                 } catch (JsonParseException e) {
+                                         e.printStackTrace();
+                                     setQuoteStatus(mContext,QuoteErrorHandling.QUOTE_STATUS_SERVER_INVALID);
+
+                                     return;
+                                 }
                                  if (quote.getAsk() == null) {
                                      Log.d(LOG_TAG, "Stock DNE");
                                      Intent RTReturn = new Intent(StocksActivity.INVALID);
@@ -117,18 +129,14 @@ public class StockTaskService extends GcmTaskService {
                                          QuoteProvider.Quotes.CONTENT_URI, value);
                                  Log.d(LOG_TAG, s.toString());
                                  Utils.updateWidgets(mContext);
-
-//                                 result[0] = GcmNetworkManager.RESULT_SUCCESS;
                              }
                          }
 
                          @Override
                          public void onFailure(Throwable t) {
-                             try {
-                                 throw new GSMFail();
-                             } catch (GSMFail gsmFail) {
-                                 gsmFail.printStackTrace();
-                             }
+                             if(t instanceof IOException)
+                             setQuoteStatus(mContext,QuoteErrorHandling.QUOTE_STATUS_SERVER_DOWN);
+
                          }
                      }
         );
@@ -136,7 +144,7 @@ public class StockTaskService extends GcmTaskService {
 //        return result[0];
     }
 
-    void updateData(String url, final boolean isInit) throws GSMFail{
+    void updateData(String url, final boolean isInit){
         final Map<String, String> options = new HashMap<>();
         options.put("format", "json");
         options.put("env", "store://datatables.org/alltableswithkeys");
@@ -147,11 +155,9 @@ public class StockTaskService extends GcmTaskService {
 
             @Override
             public void onFailure(Throwable t) {
-                try {
-                    throw new GSMFail();
-                } catch (GSMFail gsmFail) {
-                    gsmFail.printStackTrace();
-                }
+                if(t instanceof IOException)
+                    setQuoteStatus(mContext,QuoteErrorHandling.QUOTE_STATUS_SERVER_DOWN);
+
             }
 
 
@@ -159,9 +165,16 @@ public class StockTaskService extends GcmTaskService {
             public void onResponse(
                     retrofit.Response<QueryMulti> response,
                     Retrofit retrofit) {
+                Query_ query;
                 QueryMulti queries = response.body();
                 if (queries != null) {
-                    Query_ query = queries.getQuery();
+                    try {
+                        query = queries.getQuery();
+                    } catch (JsonParseException e) {
+                        e.printStackTrace();
+                        setQuoteStatus(mContext,QuoteErrorHandling.QUOTE_STATUS_SERVER_INVALID);
+                        return;
+                    }
                     Log.d(LOG_TAG, query.getCreated() + "");
                     Results results = query.getResults();
                     int numOfQuotes = results.getQuote().size();
@@ -304,19 +317,10 @@ public class StockTaskService extends GcmTaskService {
         }
         Log.d(LOG_TAG, urlString);
         if(isAdd)
-        {
-            try {
-                insertData(urlString);
-            } catch (GSMFail gsmFail) {
-            return GcmNetworkManager.RESULT_FAILURE;
-        }
+            insertData(urlString);
+        updateData(urlString, isInit);
+        setQuoteStatus(mContext,QuoteErrorHandling.QUOTE_STATUS_OK);
 
-        }
-        try {
-            updateData(urlString, isInit);
-        } catch (GSMFail gsmFail) {
-            return GcmNetworkManager.RESULT_FAILURE;
-        }
         //      try{
 //        getResponse = fetchData(urlString);
 //        try {
@@ -353,6 +357,16 @@ public class StockTaskService extends GcmTaskService {
 
 
 
-    private class GSMFail extends Exception {
+    /**
+     * Sets the location status into shared preference.  This function should not be called from
+     * the UI thread because it uses commit to write to the shared preferences.
+     * @param c Context to get the PreferenceManager from.
+     * @param quotestatus The IntDef value to set
+     */
+    static private void setQuoteStatus(Context c, @QuoteErrorHandling int quotestatus){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(c.getString(R.string.pref_quote_status_key), quotestatus);
+        spe.commit();
     }
 }

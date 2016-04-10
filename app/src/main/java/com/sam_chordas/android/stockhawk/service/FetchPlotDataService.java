@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -62,6 +61,8 @@ public class FetchPlotDataService  extends IntentService{
             DateTime dt = new DateTime(new Date());
 
             HttpUrl myUrl = url.newBuilder()
+//       after countless hours of failing to parse yql, I resorted to this hidden yahoo REST API :(
+
 //        s 	Ticker symbol (YHOO in the example)
 //        a     The "from month"
 //        b 	The "from day"
@@ -112,23 +113,8 @@ public class FetchPlotDataService  extends IntentService{
                     contentValues.put(VALUES[i], record.get("Close"));
                     i--;
                 }
-                Log.d(LOG_TAG,"DUMP"+ contentValues.toString());
-
                 mContext.getContentResolver().insert(
                         uri, contentValues);
-                Log.d(LOG_TAG,"DUMP"+ contentValues.toString());
-                DatabaseUtils.dumpCursor(mContext.getContentResolver().query(uri,null,null,null,null));
-//                for (CSVRecord record : records) {
-////                    ContentResolver.
-//                    Log.d(LOG_TAG, (record.get("Date")));
-//                    contentValues = new ContentValues();
-//                    contentValues.put(HistColumns.SYMBOL, symbol);
-//                    contentValues.put(HistColumns.DATE, record.get("Date"));
-//                    contentValues.put(HistColumns.VALUE, record.get("Close"));
-////                        TODO bulk insert
-//                    mContext.getContentResolver().insert(
-//                            uri, contentValues);
-//                }
             }
         });
         Intent done = new Intent(BROADCAST_ACTION);
