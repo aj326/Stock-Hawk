@@ -64,11 +64,11 @@ public class StocksActivity extends AppCompatActivity
     public static final String INVALID = "invalid_stock";
     public static final String MAIN_TO_DETAIL = "com.sam_chordas.android.stockhawk.app.MAIN_TO_DETAIL";
     public static final String ACTION_PLOT = "com.sam_chordas.android.stockhawk.app.ACTION_PLOT";
+    private boolean isInit;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//    mContext.deleteDatabase(QuoteDatabase.FILE_NAME);
         super.onCreate(savedInstanceState);
         Stetho.initialize(
                 Stetho.newInitializerBuilder(this)
@@ -88,8 +88,9 @@ public class StocksActivity extends AppCompatActivity
         mServiceIntent = new Intent(this, StockIntentService.class);
         if (savedInstanceState == null) {
             // Run the initialize task service so that some stocks appear upon an empty database
-            mServiceIntent.putExtra("tag", "init");
             if (isConnected) {
+                isInit = true;
+                mServiceIntent.putExtra("tag", "init");
                 startService(mServiceIntent);
             }
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -249,7 +250,7 @@ public class StocksActivity extends AppCompatActivity
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursorAdapter.swapCursor(data);
         mCursor = data;
-        if (mCursor.getCount() == 0) {
+        if (!isInit && mCursor.getCount() == 0) {
           updateEmptyView();
         }
     }
