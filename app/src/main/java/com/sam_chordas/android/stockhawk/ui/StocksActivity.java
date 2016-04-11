@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -54,7 +55,6 @@ public class StocksActivity extends AppCompatActivity
      */
     private CharSequence mTitle;
     private Intent mServiceIntent;
-    private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
@@ -98,11 +98,13 @@ public class StocksActivity extends AppCompatActivity
                 mServiceIntent.putExtra("tag", "init");
                 startService(mServiceIntent);
             }
+            // if activity created for 1st time, initiate loader
             getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
             Log.d(LOG_TAG, "initLoader");
         }
             else {
                 Log.d(LOG_TAG, "restartLoader");
+            // if activity is being recreated, simply restart loader
                 getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
 
             }
@@ -125,8 +127,9 @@ public class StocksActivity extends AppCompatActivity
                                        new MaterialDialog.InputCallback() {
                                            @Override
                                            public void onInput(
-                                                   MaterialDialog dialog,
+                                                   @NonNull MaterialDialog dialog,
                                                    CharSequence input) {
+                                               // unify symbols between db and material
                                                String inputUC = input.toString().toUpperCase();
                                                // On FAB click, receive user input. Make sure the stock doesn't already exist
                                                // in the DB and proceed accordingly
@@ -135,9 +138,9 @@ public class StocksActivity extends AppCompatActivity
                                                        new String[]{QuoteColumns.SYMBOL},
                                                        QuoteColumns.SYMBOL + "= ?",
                                                        new String[]{inputUC}, null);
-                                               if (c.getCount() != 0) {
+                                               if ((c != null ? c.getCount() : 0) != 0) {
                                                    Utils.errorToast(StocksActivity.this,
-                                                                    inputUC.concat(" is already saved!"));
+                                                                    inputUC.concat(getString(R.string.stock_already_saved)));
                                                    return;
                                                } else {
                                                    // Add the stock to DB
@@ -159,6 +162,7 @@ public class StocksActivity extends AppCompatActivity
             });
 
             mTitle = getTitle();
+            //this check is probably redundant. Look @177
             if (isConnected) {
                 long period = 3600L;
                 long flex = 10L;
@@ -235,7 +239,7 @@ public class StocksActivity extends AppCompatActivity
         mCursorAdapter.swapCursor(data);
 //        mCursorAdapter.notifyDataSetChanged();
         ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter);
-        mItemTouchHelper = new ItemTouchHelper(callback);
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(callback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
 //        data.moveToPosition()
         mRecyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,

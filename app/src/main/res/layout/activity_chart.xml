@@ -19,7 +19,6 @@
         <com.sam_chordas.android.stockhawk.Views.VerticalTextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/value"
             android:text="@string/chart_value_title"
             android:textColor="@color/material_blue_500"
             android:textAlignment="center"

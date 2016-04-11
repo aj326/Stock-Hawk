@@ -26,5 +26,6 @@
   <string name="chart_date_title">Date</string>
   <string name="pref_quote_status_key">pref_quote_status_key</string>
   <string name="pref_plot_status_key">pref_plot_status_key</string>
+  <string name="stock_already_saved">" is already saved!"</string>
 
 </resources>

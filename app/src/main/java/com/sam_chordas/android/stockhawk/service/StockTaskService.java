@@ -62,8 +62,8 @@ public class StockTaskService extends GcmTaskService {
 //    private OkHttpClient client = new OkHttpClient();
     private Context mContext;
     private StringBuilder mStoredSymbols = new StringBuilder();
-    private boolean isUpdate, isInit, isAdd;
-    private StringBuilder symbols;
+    private boolean isInit;
+    private boolean isAdd;
 
 
     final Retrofit retrofit = new Retrofit.Builder().baseUrl(
@@ -248,7 +248,7 @@ public class StockTaskService extends GcmTaskService {
             mContext = this;
         }
         String urlString;
-        symbols = new StringBuilder();
+        StringBuilder symbols = new StringBuilder();
         StringBuilder urlStringBuilder = new StringBuilder();
 
         try {
@@ -266,7 +266,7 @@ public class StockTaskService extends GcmTaskService {
                                                                   new String[]{"Distinct " + QuoteColumns.SYMBOL},
                                                                   null,
                                                                   null, null);
-            if (initQueryCursor.getCount() == 0 || initQueryCursor == null) {
+            if (initQueryCursor == null || initQueryCursor.getCount() == 0 ) {
                 // Init task. Populates DB with quotes for the symbols seen below
 //                isUpdate = false;
                 isInit = true;
@@ -280,8 +280,8 @@ public class StockTaskService extends GcmTaskService {
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-            } else if (initQueryCursor != null) {
-                isUpdate = true;
+            } else {
+                boolean isUpdate = true;
                 DatabaseUtils.dumpCursor(initQueryCursor);
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {

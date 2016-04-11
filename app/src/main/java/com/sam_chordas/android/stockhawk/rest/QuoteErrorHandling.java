@@ -11,8 +11,8 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.SOURCE)
 @IntDef({QuoteErrorHandling.QUOTE_STATUS_OK,QuoteErrorHandling.QUOTE_STATUS_SERVER_DOWN,QuoteErrorHandling.QUOTE_STATUS_SERVER_INVALID,QuoteErrorHandling.QUOTE_STATUS_UNKNOWN})
 public @interface QuoteErrorHandling {
-    public static final int QUOTE_STATUS_OK = 0;
-    public static final int QUOTE_STATUS_SERVER_DOWN = 1;
-    public static final int QUOTE_STATUS_SERVER_INVALID = 2;
-    public static final int QUOTE_STATUS_UNKNOWN = 3;
+    int QUOTE_STATUS_OK = 0;
+    int QUOTE_STATUS_SERVER_DOWN = 1;
+    int QUOTE_STATUS_SERVER_INVALID = 2;
+    int QUOTE_STATUS_UNKNOWN = 3;
 }
