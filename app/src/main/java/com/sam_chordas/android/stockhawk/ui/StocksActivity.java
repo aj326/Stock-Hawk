@@ -17,6 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -57,14 +58,16 @@ public class StocksActivity extends AppCompatActivity
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
-    private Cursor mCursor;
     private String message;
+    private RecyclerView mRecyclerView;
     boolean isConnected;
     private SwipeRefreshLayout swipeContainer;
-    public static final String INVALID = "invalid_stock";
+    public static final String INVALID = "com.sam_chordas.android.stockhawk.app.INVALID_STOCK";
     public static final String MAIN_TO_DETAIL = "com.sam_chordas.android.stockhawk.app.MAIN_TO_DETAIL";
-    public static final String ACTION_PLOT = "com.sam_chordas.android.stockhawk.app.ACTION_PLOT";
     private boolean isInit;
+    private String LOG_TAG = this.getClass().getSimpleName();
+
+
 
 
     @Override
@@ -75,52 +78,42 @@ public class StocksActivity extends AppCompatActivity
                         .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
                         .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
                         .build());
+        Log.d(LOG_TAG,"onCreate");
+
         mContext = this;
         isConnected = Utils.isConnected(mContext);
         setContentView(R.layout.activity_stocks);
-
+        mServiceIntent = new Intent(this, StockIntentService.class);
+        IntentFilter invalidIntentFilter = new IntentFilter();
+        invalidIntentFilter.addAction(INVALID);
         LocalBroadcastManager bManager = LocalBroadcastManager.getInstance(this);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(INVALID);
-        bManager.registerReceiver(bReceiver, intentFilter);
+        bManager.registerReceiver(bReceiver, invalidIntentFilter);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
+        //first time creation
         if (savedInstanceState == null) {
             // Run the initialize task service so that some stocks appear upon an empty database
             if (isConnected) {
-                mServiceIntent = new Intent(this, StockIntentService.class);
                 isInit = true;
                 mServiceIntent.putExtra("tag", "init");
                 startService(mServiceIntent);
             }
-            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
             getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
-            mCursorAdapter = new QuoteCursorAdapter(this, getContentResolver().query(
-                    QuoteProvider.Quotes.CONTENT_URI, null, null, null, null));
-            recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
-                                                                                  new RecyclerViewItemClickListener.OnItemClickListener() {
-                                                                                      @Override
-                                                                                      public void onItemClick(
-                                                                                              View v,
-                                                                                              int position) {
-                                                                                          Intent detailActivityIntent = new Intent(
-                                                                                                  MAIN_TO_DETAIL,
-                                                                                                  QuoteProvider.History.withSymbol(
-                                                                                                          mCursorAdapter.getSymbol(
-                                                                                                                  position)),
-                                                                                                  mContext,
-                                                                                                  ChartActivity.class);
-                                                                                          v.setContentDescription(
-                                                                                                  "Plot: " + mCursorAdapter.getSymbol(
-                                                                                                          position));
-                                                                                          startActivity(
-                                                                                                  detailActivityIntent);
-                                                                                      }
-                                                                                  }));
-            recyclerView.setAdapter(mCursorAdapter);
+            Log.d(LOG_TAG, "initLoader");
+        }
+            else {
+                Log.d(LOG_TAG, "restartLoader");
+                getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+
+            }
+
+
+            mCursorAdapter = new QuoteCursorAdapter(mContext,null);
+            mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            mRecyclerView.setAdapter(mCursorAdapter);
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.attachToRecyclerView(recyclerView);
+            fab.attachToRecyclerView(mRecyclerView);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -134,22 +127,23 @@ public class StocksActivity extends AppCompatActivity
                                            public void onInput(
                                                    MaterialDialog dialog,
                                                    CharSequence input) {
+                                               String inputUC = input.toString().toUpperCase();
                                                // On FAB click, receive user input. Make sure the stock doesn't already exist
                                                // in the DB and proceed accordingly
                                                Cursor c = getContentResolver().query(
                                                        QuoteProvider.Quotes.CONTENT_URI,
                                                        new String[]{QuoteColumns.SYMBOL},
                                                        QuoteColumns.SYMBOL + "= ?",
-                                                       new String[]{input.toString()}, null);
+                                                       new String[]{inputUC}, null);
                                                if (c.getCount() != 0) {
                                                    Utils.errorToast(StocksActivity.this,
-                                                                    "This stock is already saved!");
+                                                                    inputUC.concat(" is already saved!"));
                                                    return;
                                                } else {
                                                    // Add the stock to DB
                                                    mServiceIntent.putExtra("tag", "add");
                                                    mServiceIntent.putExtra("symbol",
-                                                                           input.toString());
+                                                                           inputUC);
                                                    startService(mServiceIntent);
                                                }
                                                c.close();
@@ -163,9 +157,7 @@ public class StocksActivity extends AppCompatActivity
 
                 }
             });
-            ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter);
-            mItemTouchHelper = new ItemTouchHelper(callback);
-            mItemTouchHelper.attachToRecyclerView(recyclerView);
+
             mTitle = getTitle();
             if (isConnected) {
                 long period = 3600L;
@@ -189,18 +181,7 @@ public class StocksActivity extends AppCompatActivity
 
         }
 
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
-    }
 
     public void networkToast() {
         Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
@@ -220,6 +201,7 @@ public class StocksActivity extends AppCompatActivity
         return true;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -238,25 +220,46 @@ public class StocksActivity extends AppCompatActivity
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // This narrows the return to only the stocks that are most current.
         return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
-                                new String[]{
-                                        QuoteColumns._ID,
-                                        QuoteColumns.SYMBOL,
-                                        QuoteColumns.BIDPRICE,
-                                        QuoteColumns.PERCENT_CHANGE,
-                                        QuoteColumns.CHANGE,
-                                        QuoteColumns.ISUP},
-                                QuoteColumns.ISCURRENT + " = ?",
-                                new String[]{"1"},
+                                null,
+                                null,
+                                null,
                                 null);
+
+
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(LOG_TAG,"onLoadFinished");
         mCursorAdapter.swapCursor(data);
-        mCursor = data;
-        if (!isInit && mCursor.getCount() == 0) {
+//        mCursorAdapter.notifyDataSetChanged();
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mCursorAdapter);
+        mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
+//        data.moveToPosition()
+        mRecyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
+                                                                               new RecyclerViewItemClickListener.OnItemClickListener() {
+                                                                                   @Override
+                                                                                   public void onItemClick(
+                                                                                           View v,
+                                                                                           int position) {
+                                                                                       Log.d(LOG_TAG, position+"");
+                                                                                       Intent detailActivityIntent = new Intent(
+                                                                                               MAIN_TO_DETAIL,
+                                                                                               QuoteProvider.History.withSymbol(
+                                                                                                       mCursorAdapter.getSymbol(
+                                                                                                               position)),
+                                                                                               mContext,
+                                                                                               ChartActivity.class);
+                                                                                       v.setContentDescription(
+                                                                                               "Plot: " + mCursorAdapter.getSymbol(
+                                                                                                       position));
+                                                                                       startActivity(
+                                                                                               detailActivityIntent);
+                                                                                   }
+                                                                               }));
+        if (!isInit && data.getCount() == 0) {
           updateEmptyView();
         }
     }
@@ -265,9 +268,7 @@ public class StocksActivity extends AppCompatActivity
     public void onLoaderReset(Loader<Cursor> loader) {
         mCursorAdapter.swapCursor(null);
     }
-//  http://stackoverflow.com/questions/12997463/send-intent-from-service-to-activity
 
-    //  TODO remove Utils.errorToast
     private BroadcastReceiver bReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -298,4 +299,8 @@ public class StocksActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

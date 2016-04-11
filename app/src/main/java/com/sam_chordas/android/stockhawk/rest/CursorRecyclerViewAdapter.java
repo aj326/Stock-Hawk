@@ -93,6 +93,7 @@ public abstract class CursorRecyclerViewAdapter <VH extends RecyclerView.ViewHol
         mCursor.registerDataSetObserver(mDataSetObserver);
       }
       rowIdColumn = newCursor.getColumnIndexOrThrow("_id");
+      rowSymbolColumn = newCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL);
       dataIsValid = true;
       notifyDataSetChanged();
     }else{
