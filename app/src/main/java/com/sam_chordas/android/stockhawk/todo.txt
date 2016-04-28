@@ -1,3 +1,5 @@
 TODO replace okhttp with retrofit for plotting
 
-TODO major refactor!
+TODO major refactor.
+
+TODO trim clutter in sql database
